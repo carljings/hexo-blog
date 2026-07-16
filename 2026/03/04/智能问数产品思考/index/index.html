@@ -1,0 +1,842 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/blog/img/fluid.png">
+  <link rel="icon" href="/blog/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="小川">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="智能问数产品思考 关于智能问数（Text-to-SQL）产品的深度分析与未来展望   目录 背景 痛点 可能的解决方法 下一步计划   一、背景  当前方案RAG + LLM Workflow 模式： 1用户提问 → 意图识别 → 知识召回（表信息 &#x2F; 术语 &#x2F; 指标 &#x2F; 维度 &#x2F; 纬度值）→ LLM 生成 SQL → 执行查询 → 结果返回  典型架构：  检索层：向量数据库 + 关键词检索（混">
+<meta property="og:type" content="article">
+<meta property="og:title" content="智能问数产品思考">
+<meta property="og:url" content="http://carljings.top/blog/2026/03/04/%E6%99%BA%E8%83%BD%E9%97%AE%E6%95%B0%E4%BA%A7%E5%93%81%E6%80%9D%E8%80%83/index/index.html">
+<meta property="og:site_name" content="小川的blog">
+<meta property="og:description" content="智能问数产品思考 关于智能问数（Text-to-SQL）产品的深度分析与未来展望   目录 背景 痛点 可能的解决方法 下一步计划   一、背景  当前方案RAG + LLM Workflow 模式： 1用户提问 → 意图识别 → 知识召回（表信息 &#x2F; 术语 &#x2F; 指标 &#x2F; 维度 &#x2F; 纬度值）→ LLM 生成 SQL → 执行查询 → 结果返回  典型架构：  检索层：向量数据库 + 关键词检索（混">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://carljings.top/blog/img/2026-03-03-%E6%99%BA%E8%83%BD%E9%97%AE%E6%95%B0%E6%9E%B6%E6%9E%84%E5%9B%BE-%E6%89%8B%E7%BB%98%E9%A3%8E-%E6%97%A0%E7%95%99%E7%99%BD_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/%E7%AC%AC%E4%BA%8C%E7%82%B9-%E7%97%9B%E7%82%B9%E6%89%8B%E7%BB%98-%E5%BD%A9%E5%9B%BE%E6%A0%87%E7%89%88_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1%E6%9C%AC%E4%BD%93%E6%96%B9%E6%B3%95%E8%AE%BA-Edited_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/%E6%A0%87%E5%87%86%E5%8C%96%E4%B8%BB%E9%A2%98%E5%BA%93_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/%E8%87%AA%E5%8A%A8%E5%8C%96%E5%AD%A6%E4%B9%A0%E4%B8%8E%E6%B2%BB%E7%90%86_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/%E7%AE%80%E5%8C%96%E7%9F%A5%E8%AF%86%E5%AE%9A%E4%B9%89_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/%E6%9E%B6%E6%9E%84%E8%BF%87%E4%BA%8E%E5%A4%8D%E6%9D%82_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/Java%E4%B8%8D%E9%80%82%E5%90%88AI%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/Epoint%E6%A1%86%E6%9E%B6%E8%BF%87%E4%BA%8E%E9%87%8D%E9%87%8F%E7%BA%A7_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/2026-03-04-sqlbot-tech-stack-v2.png">
+<meta property="og:image" content="http://carljings.top/blog/img/%E6%8A%80%E6%9C%AF%E9%80%82%E9%85%8D%E8%A1%A5%E9%BD%90%E6%96%B9%E6%A1%88_20260304211141.png">
+<meta property="og:image" content="http://carljings.top/blog/img/2026-03-04-sqlbot-query-enhancement-flow.png">
+<meta property="og:image" content="http://carljings.top/blog/img/2026-03-04-sqlbot-switch-architecture-v2.png">
+<meta property="og:image" content="http://carljings.top/blog/img/%E7%AE%80%E5%8D%95%E9%9B%86%E6%88%90%E6%96%B9%E6%A1%88_20260304211141.png">
+<meta property="article:published_time" content="2026-03-04T13:11:41.000Z">
+<meta property="article:modified_time" content="2026-03-04T14:31:27.283Z">
+<meta property="article:author" content="小川">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://carljings.top/blog/img/2026-03-03-%E6%99%BA%E8%83%BD%E9%97%AE%E6%95%B0%E6%9E%B6%E6%9E%84%E5%9B%BE-%E6%89%8B%E7%BB%98%E9%A3%8E-%E6%97%A0%E7%95%99%E7%99%BD_20260304211141.png">
+  
+  
+  
+  <title>智能问数产品思考 - 小川的blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/blog/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/blog/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/blog/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/shubiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/gradient.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"carljings.top","root":"/blog/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":"https://carljings.top/script.js","website_id":"8d8496ca-c014-4ba3-abfe-69238255c0a3","domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":"a92n1nS6JDgqJPdF9F1CGv0SFRDQfjo5RbGXcdwLcwFxLwgLcIeBJCPcHDQJeVG9tdJWueJz4jRgwpprUNQwiVI/+mFckSUbe8K35HY6Ej54CHL1ip63YLRUmv/BpK+Ci3ZVesnextH41ZjPQ91ub8S6z/FO9R8b78iAPblnpXx7lM+75KpAIR5biDkN0YlqNGAvPQt+/uVliTA/yHCQFWssdLpQ+Uby8rOqyaH2ICPa4Fq6uZlOqpW0qKQBCZsfdEL+lblft0YpXalgR3yMPOZPpnICHPO3C0WNKNJGXCf7+XabEDj1ah6mRd1APY/Vrym3+gsP/QeFjvEhLpJwdAGSgAM/GHvBJQ==","api_server":"https://carljings.top/api"}},"search_path":"/blog/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/blog/js/utils.js" ></script>
+  <script  src="/blog/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        let umami = document.createElement('script');
+        umami.async = true;
+        umami.src = "https://carljings.top/script.js";
+        umami.setAttribute("data-website-id", "8d8496ca-c014-4ba3-abfe-69238255c0a3");
+        umami.setAttribute("data-domains", "");
+        document.head.appendChild(umami);
+      }
+    </script>
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/blog/">
+      <strong>一切成功源自积累~</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>主页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>成就</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/blog/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="智能问数产品思考"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-03-04 21:11" pubdate>
+          2026年3月4日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          23 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="umami-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="umami-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">智能问数产品思考</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="智能问数产品思考"><a href="# 智能问数产品思考" class="headerlink" title="智能问数产品思考"></a>智能问数产品思考</h1><blockquote>
+<p>关于智能问数（Text-to-SQL）产品的深度分析与未来展望</p>
+</blockquote>
+<hr>
+<h2 id="目录"><a href="# 目录" class="headerlink" title="目录"></a>目录</h2><ol>
+<li><a href="#%E4%B8%80%E8%83%8C%E6%99%AF">背景</a></li>
+<li><a href="#%E4%BA%8C%E7%97%9B%E7%82%B9">痛点</a></li>
+<li><a href="#%E4%B8%89%E5%8F%AF%E8%83%BD%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95">可能的解决方法</a></li>
+<li><a href="#%E5%9B%9B%E4%B8%8B%E4%B8%80%E6%AD%A5%E8%AE%A1%E5%88%92">下一步计划</a></li>
+</ol>
+<hr>
+<h2 id="一、背景"><a href="# 一、背景" class="headerlink" title="一、背景"></a>一、背景 </h2><h3 id="当前方案"><a href="# 当前方案" class="headerlink" title="当前方案"></a> 当前方案</h3><p><strong>RAG + LLM Workflow</strong> 模式：</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">用户提问 → 意图识别 → 知识召回（表信息 <span class="hljs-regexp">/ 术语 /</span> 指标 <span class="hljs-regexp">/ 维度 /</span> 纬度值）→ LLM 生成 SQL → 执行查询 → 结果返回<br></code></pre></td></tr></table></figure>
+
+<p><strong>典型架构</strong>：</p>
+<ul>
+<li><strong>检索层</strong>：向量数据库 + 关键词检索（混合检索）</li>
+<li><strong>知识层</strong>：表、字段、术语、指标、纬度、纬度值、记忆</li>
+<li><strong>生成层</strong>：大模型生成语义 SQL</li>
+<li><strong>执行层</strong>：SQL 引擎执行和数据返回<br><img src="/blog/img/2026-03-03-%E6%99%BA%E8%83%BD%E9%97%AE%E6%95%B0%E6%9E%B6%E6%9E%84%E5%9B%BE-%E6%89%8B%E7%BB%98%E9%A3%8E-%E6%97%A0%E7%95%99%E7%99%BD_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></li>
+</ul>
+<p>我们目前还是第二个 RAG 阶段 + 我们的 Agent 平台里的 workflow（对话流、动作流）<br>原先我以为 用动作流的固化流程智能体可以提升问数的稳定性和准确性，但实际这种模式导致了现场架构流程调优、分析师结构化知识梳理、rag 检索优化，提示词优化的人工维护工作量的爆炸，9 张表七八百个问题自测知识积累和调优，花了非常多的人力才搞定平均准确率在 90%，但实际我们问数平台还有很多一本账中屏里的指标问不出来，还有人法信的几百张表都没有接入，对于客户来说我们的平台可问范围远远没达到要求。但我们目前这套架构模式知识实施治理的工作量是相对比较重的，而且对多表关联支持的不好。</p>
+<hr>
+<h2 id="二、痛点"><a href="# 二、痛点" class="headerlink" title="二、痛点"></a>二、痛点</h2><p>1、知识维护成本高：需要人工梳理和维护较多的指标、术语、纬度值近义词，才能保证比较高的准确率<br>2、agent 流程维护成本高：需要专员调试修改对话流、动作流，同时还需要后端配合接口调试（动作流里都是接口技能）<br>3、组件化后对接成本比较高，统一元数据（中研院）、agent（中研院）、前端 太多团队对接协作，调试系统问题的成本很大<br>4、平台架构臃肿、落后，对 ai 不够友好，我们可以用 ai 来做动作流里的接口，但 agent 的对话流和动作流没有接口可以让 ai 自动去开发调整</p>
+<p><img src="/blog/img/%E7%AC%AC%E4%BA%8C%E7%82%B9-%E7%97%9B%E7%82%B9%E6%89%8B%E7%BB%98-%E5%BD%A9%E5%9B%BE%E6%A0%87%E7%89%88_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></p>
+<hr>
+<h2 id="三、可能的解决方法"><a href="# 三、可能的解决方法" class="headerlink" title="三、可能的解决方法"></a>三、可能的解决方法 </h2><h3 id="方法 -1：知识体系重构 - 自动化学习与治理"><a href="# 方法 -1：知识体系重构 - 自动化学习与治理" class="headerlink" title="方法 1：知识体系重构 + 自动化学习与治理"></a> 方法 1：知识体系重构 + 自动化学习与治理 </h3><p><strong> 对应痛点</strong>：#1 知识维护成本高</p>
+<p><strong>核心思路</strong>：将知识从硬编码中解耦，构建可复用、可持续更新的知识体系</p>
+<p><strong>具体措施</strong>：</p>
+<ul>
+<li><strong>知识图谱</strong>（本体）：建立概念定义和之间的语义关联，梳理本体元知识，解决术语、指标维护爆炸问题。<br><img src="/blog/img/%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1%E6%9C%AC%E4%BD%93%E6%96%B9%E6%B3%95%E8%AE%BA-Edited_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></li>
+<li><strong>标准化主题库</strong>：按住建、交易、政务业务场景建立标准的主题库，这样可以屏蔽每个地方或项目表结构和表数据的差异，保证积累的知识（本体、术语、指标）稳定可复用，但会增加从业务原始表到治理到主题库的数据开发工作量。<br><img src="/blog/img/%E6%A0%87%E5%87%86%E5%8C%96%E4%B8%BB%E9%A2%98%E5%BA%93_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></li>
+<li><strong>自动化学习与治理</strong>：引入用户反馈机制，模型自动修正错误知识，减少人工维护工作量。模型每天自动总结问题，针对问不出来或者问出来有问题的进行自我总结，最后让人工来审核。比如客户问的问题超出了目前接入表的范围，有些指标超出了目前定义的指标范围，有些行业黑化无法理解需要添加新的术语，让模型被动接收我们分析师梳理的知识变成主动去学习完善自己的知识体系。<br><img src="/blog/img/%E8%87%AA%E5%8A%A8%E5%8C%96%E5%AD%A6%E4%B9%A0%E4%B8%8E%E6%B2%BB%E7%90%86_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></li>
+<li><strong>简化知识定义</strong>：<br>SQLBot 的知识维护和 RAG 检索也比我们目前的架构简单<br>SQLBot 里只有 术语、表 Schema 描述（包含字段）、SQL 示例、历史相似提问、 这些知识来召回参与 SQL 生成，我们的问数系统里多了 指标、纬度、纬度值 ，指标在 SQLBot 里用术语可以代替， 纬度和纬度值在 SQLBot 里可以维护在字段描述里，可以明显对比出 SQLBot 参与 SQL 生成的检索知识维护比我们的平台要简单，所以他们在部署、快速导入大量表比我们的系统初始化效率要高，并且 SQLbot 通过维护表间关系支持多表查询，用少量的实施工作就能达到 80% 的效果，但也有一些后期扩展问题，SQLBot 在字段描述里添加纬度值的近义词非常麻烦，针对无限动态实体的纬度值需要人工去数据库里查了去字段描述里添加近义词，维护起来没有我们系统方便。只要客户问到 纬度值里近义词相关的问题 SQLBot 都需要非常麻烦的维护工作量，维护的模式没有我们系统方便。<br><img src="/blog/img/%E7%AE%80%E5%8C%96%E7%9F%A5%E8%AF%86%E5%AE%9A%E4%B9%89_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></li>
+</ul>
+<hr>
+<h3 id="方法 -2：技术栈和架构重塑"><a href="# 方法 -2：技术栈和架构重塑" class="headerlink" title="方法 2：技术栈和架构重塑"></a>方法 2：技术栈和架构重塑 </h3><p><strong> 对应痛点</strong>：#2 agent 流程维护成本高<br>          #3 组件化后对接成本比较高<br>          #4 平台架构臃肿、落后，对 ai 不够友好</p>
+<p><strong>核心思路</strong>：Python 后端 +Vue 前端，放弃公司框架和 Agent 平台</p>
+<p><strong>当前架构问题 </strong><br>⚠️ <strong> 架构过于复杂</strong> - 多组件（问数系统、统一元数据、指标中心、Agent 平台）多团队，协作成本巨大，AI 无法全链路介入，Agent 平台没有给 AI 提供接口，直接限制了系统的快速迭代<br><img src="/blog/img/%E6%9E%B6%E6%9E%84%E8%BF%87%E4%BA%8E%E5%A4%8D%E6%9D%82_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></p>
+<p>⚠️ <strong>Java 不适合 AI 核心逻辑</strong> - Java 也有 AI 相关的生态，但没有 python 生态那么完善，亲 AI<br><img src="/blog/img/Java%E4%B8%8D%E9%80%82%E5%90%88AI%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></p>
+<p>⚠️ <strong>Epoint 框架过于重量级</strong> - 启动慢，很多框架的功能根本用不到<br><img src="/blog/img/Epoint%E6%A1%86%E6%9E%B6%E8%BF%87%E4%BA%8E%E9%87%8D%E9%87%8F%E7%BA%A7_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></p>
+<p>可以参考开源 SQLBot 技术栈来激进调整 <br><strong>Python 3.11 + FastAPI + LangChain&#x2F;LangGraph + PostgreSQL&#x2F;pgvector</strong> 做后端 AI 编排，<strong>Vue 3 + TypeScript + Element Plus + AntV</strong> 做前端交互，<strong>Node.js + G2 SSR</strong> 做服务端图表渲染，整体通过 <strong>Docker</strong> 单容器部署，本地开发使用 <strong>PM2</strong> 统一管理。<br><img src="/blog/img/2026-03-04-sqlbot-tech-stack-v2.png" srcset="/blog/img/loading.gif" lazyload><br> 摒弃 Epoint 框架后会缺失一些有用的能力，比如统一支撑、统一用户、工作流引擎，需要用 AI 来补齐这块短板，把 SQLBot 里的 pgsql 业务库换成 国产化达梦库和 mysql 库， pgvector 就用 ES 全文 + 向量检索来替代，这个技术栈还有个问题，没有 java 的 write once  run anywhere 跨平台那么强，nodejs 相关依赖打进 docker 都需要在不同国产化环境下进行，要做下面几点补齐适配</p>
+<p><strong>缺失能力补齐方案</strong>：</p>
+<ul>
+<li><strong>统一支撑（权限、审计）</strong>：通过 LangGraph 中间件实现请求链追踪和操作审计，用 AI 自动生成权限模型配置，配合 FastAPI 的中间件实现细粒度权限控制</li>
+<li><strong>统一用户认证</strong>：基于 OAuth2&#x2F;JWT 的轻量级认证方案，结合 PostgreSQL（或达梦）的用户表，借助 FastAPI-JWT 实现</li>
+<li><strong>工作流引擎</strong>：用 LangGraph 的状态机（State Machine）和 Agent 决策流程替代传统工作流，通过 AI 的 tool_choice 实现条件分支和流程编排，更加灵活智能</li>
+</ul>
+<p><strong>国产化数据库适配</strong>：</p>
+<ul>
+<li><strong>达梦库（DM8）</strong>：SQL 方言接近 Oracle，改动主要在连接池（pymongo → dmPython）和 SQL 分页语法，LangChain 的 SQLDatabase 需要自定义 Dialect</li>
+<li><strong>MySQL</strong>：直接兼容，无需额外改动</li>
+<li><strong>ES + 向量数据库</strong>：ES 8.0+ 的 dense_vector 字段可替代 pgvector，全文检索 + 向量检索的组合甚至比 pgvector 更灵活，支持混合搜索</li>
+</ul>
+<p><strong>跨平台国产化部署方案</strong>：</p>
+<ul>
+<li><strong>标准 Docker 镜像</strong>：构建 Python 基础镜像（包含必要系统库），Node.js 依赖通过 <code>npm ci --only=production</code> 在构建时确定版本，避免运行时变化</li>
+<li><strong>分环境构建</strong>：针对飞腾 ARM、龙芯等不同 CPU 架构，预先构建多架构镜像（<code>docker buildx</code>）并推送到私有仓库</li>
+<li><strong>动态链接库处理</strong>：对于国产系统特定的 C 扩展（如数据库驱动），在 Docker 构建阶段通过多阶段构建（Multi-stage Build）编译，确保兼容性</li>
+<li><strong>本地开发</strong>：PM2 配置文件支持条件编译，通过环境变量区分不同 OS，开发机直接用 Host OS，避免频繁构建镜像</li>
+</ul>
+<p><strong>权衡与建议</strong>：</p>
+<ul>
+<li>相比 Java 的跨平台，这套栈的优势是 <strong> 轻量灵活快速迭代 </strong>，劣势是<strong> 国产化环境需要额外测试</strong>。建议早期在标准 Linux 环境验证，后期专项解决国产 CPU + OS 的适配</li>
+</ul>
+<p><img src="/blog/img/%E6%8A%80%E6%9C%AF%E9%80%82%E9%85%8D%E8%A1%A5%E9%BD%90%E6%96%B9%E6%A1%88_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></p>
+<p>然后在 SQLBot 基础上进行 AI agent 的架构演化，目前我们智能问数和 SQLBot 都没有完全发挥模型的能力，模型既是智能体（Model is the Agent）<br><img src="/blog/img/2026-03-04-sqlbot-query-enhancement-flow.png" srcset="/blog/img/loading.gif" lazyload><img src="/blog/img/2026-03-04-sqlbot-switch-architecture-v2.png" srcset="/blog/img/loading.gif" lazyload></p>
+<p>把生成 SQL 的固定流程换成 CC 这种智能体自主调用工具去完成，CC 可以去读取 MD 文件（提前把数据库里的术语、表 Schema 信息等信息 初始化到 md 文件里，或者我们新增采集这些信息的时候就不存库里直接存入 md 文件），然后我们同时也提供一些调用这些知识信息的接口，最后 CC 还能通过 SKills 或者 mcp 的方式连接上数据库自己去查询，我们原先的 LLM 方案是固定流程，LLM 模型只是在最后一步被调用来生成 SQL，并没有完成发挥 LLM 的自主规划、调用工具和 skill 的能力</p>
+<p>相关详细设计：<a href="%E5%8F%8C%E6%96%B9%E6%A1%88%E5%88%87%E6%8D%A2%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1">双方案切换详细设计</a></p>
+<p>还有一种更简单的集成方案，快速把 SQLBot 的前端配置能力复制到我们现在的智能问数系统中，然后把 SQLBot 后端的生成 SQL 的接口当成一个服务 给到我们问数系统里，把 SQLBot 当成一个 SQL 生成的引擎来用</p>
+<p><img src="/blog/img/%E7%AE%80%E5%8D%95%E9%9B%86%E6%88%90%E6%96%B9%E6%A1%88_20260304211141.png" srcset="/blog/img/loading.gif" lazyload></p>
+<hr>
+<h2 id="四、下一步计划"><a href="# 四、下一步计划" class="headerlink" title="四、下一步计划"></a>四、下一步计划 </h2><p> 基于以上分析，建议分三个阶段推进智能问数产品的演进：</p>
+<h3 id="阶段一：快速集成验证（1 个月）⚡"><a href="# 阶段一：快速集成验证（1 个月）⚡" class="headerlink" title="阶段一：快速集成验证（1 个月）⚡"></a>阶段一：快速集成验证（1 个月）⚡</h3><ul>
+<li><input disabled=""type="checkbox"> 复制 SQLBot 前端配置能力到现有问数系统</li>
+<li><input disabled=""type="checkbox"> 将 SQLBot 后端封装为独立服务</li>
+<li><input disabled=""type="checkbox"> 实现问数系统与 SQLBot 的 API 对接</li>
+<li><input disabled=""type="checkbox"> 在小范围内验证 SQL 生成质量</li>
+</ul>
+<h3 id="阶段二：知识体系重构（1-2 个月）"><a href="# 阶段二：知识体系重构（1-2 个月）" class="headerlink" title="阶段二：知识体系重构（1-2 个月）"></a>阶段二：知识体系重构（1-2 个月）</h3><ul>
+<li><input disabled=""type="checkbox"> 梳理核心业务本体，建立术语、指标、维度的语义关联</li>
+<li><input disabled=""type="checkbox"> 搭建标准化主题库，屏蔽不同项目数据源差异</li>
+<li><input disabled=""type="checkbox"> 引入用户反馈机制，实现知识自动修正与学习</li>
+</ul>
+<h3 id="阶段三：架构演进与 Agent 化（持续）"><a href="# 阶段三：架构演进与 Agent 化（持续）" class="headerlink" title="阶段三：架构演进与 Agent 化（持续）"></a>阶段三：架构演进与 Agent 化（持续）</h3><ul>
+<li><input disabled=""type="checkbox"> 评估集成效果，决定是否全面迁移到 SQLBot 技术栈</li>
+<li><input disabled=""type="checkbox"> 从固定 LLM Workflow 演进到 Agentic AI 模式</li>
+<li><input disabled=""type="checkbox"> 集成 Claude Computer Use&#x2F;Code Interpreter 能力</li>
+<li><input disabled=""type="checkbox"> 实现知识库 MD 文件化 + 数据库查询的双通道模式</li>
+</ul>
+<p><strong>预期收益</strong>：</p>
+<ul>
+<li><strong>快速方案</strong>：最小改动，快速验证 SQLBot 能力</li>
+<li><strong>知识维护</strong>：工作量降低 60%+</li>
+<li><strong>多表查询</strong>：支持能力显著提升</li>
+<li><strong>AI 自主决策</strong>：实现真正的智能 Agent</li>
+</ul>
+<hr>
+<p><em>创建时间：2026-03-03</em><br><em>标签：# 智能问数 #Text-to-SQL #AI #产品思考 #数据分析</em></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>智能问数产品思考</div>
+      <div>http://carljings.top/blog/2026/03/04/智能问数产品思考/index/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>小川</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年3月4日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/blog/2026/03/04/SQLot%20%E5%8F%8C%E6%96%B9%E6%A1%88%E5%88%87%E6%8D%A2%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E6%96%87%E6%A1%A3/index/" title="SQLot 双方案切换详细设计文档">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">SQLot 双方案切换详细设计文档</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/blog/2024/12/20/%E7%BE%BD%E7%90%83%E5%9C%BA-%E8%87%AA%E5%8A%A8%E6%8D%A1%E6%BC%8F/index/" title="羽球场 - 自动捡漏（张家港羽球人的福音）">
+                        <span class="hidden-mobile">羽球场 - 自动捡漏（张家港羽球人的福音）</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div class="disqus" style="width:100%">
+    <div id="disqus_thread"></div>
+    
+      <script>
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          Fluid.utils.createCssLink('https://lib.baomitu.com/disqusjs/1.3.0/disqusjs.css');
+          Fluid.utils.createScript('https://lib.baomitu.com/disqusjs/1.3.0/disqus.js', function() {
+            new DisqusJS({
+              shortname: 'fluid',
+              apikey: '4e8ea498025742b6b9f10f739d96b9ba'
+            });
+          });
+        });
+      </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+  </div>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/blog/js/duration.js"></script> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="umami-site-pv-container" style="display: none">
+        总访问量 
+        <span id="umami-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="umami-site-uv-container" style="display: none">
+        总访客数 
+        <span id="umami-site-uv"></span>
+         人
+      </span>
+    
+    
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      苏ICP备2024149526号-1A
+    </a>
+  </span>
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/blog/js/events.js" ></script>
+<script  src="/blog/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/blog/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/blog/js/local-search.js" ></script>
+
+  <script defer src="/blog/js/umami-view.js" ></script>
+
+
+
+
+  
+<script src="/blog/js/DynamicLine.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/snowflake.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/star.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/containsWord.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/blog/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<script src="/blog/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/blog/live2dw/assets/koharu.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.5},"log":false});</script></body>
+</html>

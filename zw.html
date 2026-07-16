@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结婚婚宴座位安排表 - 智能交换版</title>
+    <style>
+        :root {
+            /* 颜色定义 - 莫兰迪色系 */
+            --bg-color: #fdfbf7;
+            --stage-color: #ff7eb9;
+            --t-stage-color: #ff9eb5;
+            
+            /* 桌子类别颜色 */
+            --c-main: #ff4757;       /* 主桌 */
+            --c-male-rel: #70a1ff;   /* 男方亲戚 */
+            --c-fem-rel: #ff6b81;    /* 女方亲戚 */
+            --c-comrade: #2ed573;    /* 战友 */
+            --c-friend: #ffa502;     /* 朋友 */
+            --c-work: #a55eea;       /* 同事同学 */
+            --c-staff: #ced6e0;      /* 帮工司机 */
+
+            --table-size: 72px; 
+            --gap-vertical: 12px;
+            --gap-horizontal: 25px;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#e1e1e1 1px, transparent 1px);
+            background-size: 20px 20px;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+            user-select: none; 
+            overflow-x: hidden;
+        }
+
+        h1 {
+            color: #fff;
+            background: linear-gradient(45deg, #ff9eb5, #ff6b81);
+            padding: 15px 50px;
+            border-radius: 30px;
+            margin-top: 0;
+            font-size: 28px;
+            box-shadow: 0 6px 15px rgba(255, 107, 129, 0.3);
+            letter-spacing: 2px;
+        }
+
+        /* 操作按钮区 */
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        .btn-reset { background: #ff6b81; color: white; border: none; }
+        .btn-reset:hover { background: #ff4757; }
+        .btn-save-hint { background: #2ed573; color: white; border: none; display: none; }
+
+        /* 图例区域 */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            font-size: 12px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot { width: 15px; height: 15px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.1); }
+
+        /* 舞台区域 */
+        .stage-area {
+            width: 850px;
+            height: 70px;
+            background: linear-gradient(to bottom, var(--stage-color), #ff609e);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 26px;
+            font-weight: bold;
+            border-radius: 10px 10px 50% 50% / 10px 10px 20px 20px; 
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        /* 布局容器 */
+        .layout-container {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            padding-top: 10px;
+            transform-style: preserve-3d; 
+        }
+
+        /* T台 */
+        .t-stage {
+            width: 90px;
+            height: 100%; 
+            min-height: 540px;
+            background: linear-gradient(to right, var(--t-stage-color), #ffb6c1, var(--t-stage-color));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+            margin: 0 40px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        
+        .t-text {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            letter-spacing: 15px;
+            opacity: 0.8;
+        }
+
+        .side-block { display: flex; gap: var(--gap-horizontal); }
+        .column { display: flex; flex-direction: column; gap: var(--gap-vertical); padding-top: 10px; }
+
+        /* 桌子基础样式 */
+        .table {
+            width: var(--table-size);
+            height: var(--table-size);
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-size: 12px;
+            position: relative;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            transition: transform 0.05s linear, box-shadow 0.2s; 
+            cursor: grab; 
+            border: 3px solid rgba(255,255,255,0.5);
+            z-index: 20;
+        }
+
+        .table.dragging {
+            cursor: grabbing;
+            z-index: 999 !important;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            opacity: 0.95;
+            transform: scale(1.1); 
+        }
+
+        /* 交换时的动画效果 */
+        @keyframes swapPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .table.swapped {
+            animation: swapPop 0.3s ease-out;
+        }
+
+        .table-content {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-radius: 50%;
+            line-height: 1.2;
+            outline: none;
+            cursor: text;
+        }
+
+        .table::before {
+            content: '';
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border-radius: 50%;
+            border: 1px dashed rgba(0,0,0,0.2);
+            pointer-events: none;
+        }
+
+        /* 颜色分类样式 */
+        .vip { background: var(--c-main); color: white; font-weight: bold; border: 3px solid gold; }
+        .male-rel { background: linear-gradient(135deg, #fff, var(--c-male-rel)); }
+        .fem-rel { background: linear-gradient(135deg, #fff, var(--c-fem-rel)); }
+        .comrade { background: linear-gradient(135deg, #fff, var(--c-comrade)); border-color: var(--c-comrade); }
+        .friend { background: linear-gradient(135deg, #fff, var(--c-friend)); }
+        .work-school { background: linear-gradient(135deg, #fff, var(--c-work)); border-color: var(--c-work); }
+        .staff { background: linear-gradient(135deg, #fff, var(--c-staff)); }
+
+        .stats {
+            margin-top: 30px;
+            background: white;
+            padding: 15px 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            text-align: center;
+            max-width: 900px;
+            border: 1px solid #eee;
+            position: relative;
+            z-index: 50;
+        }
+        .stats h3 { margin: 0 0 10px 0; color: #555; }
+        .stats span {
+            display: inline-block;
+            margin: 5px 10px;
+            font-size: 14px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button class="btn btn-save-hint" id="saveHint">已自动保存</button>
+        <button class="btn btn-reset" onclick="resetLayout()">重置位置 & 排序</button>
+    </div>
+
+    <h1>❤ 结婚婚宴座位安排表 ❤</h1>
+
+    <div class="legend">
+        <div class="legend-item"><div class="dot" style="background:var(--c-main)"></div>主桌</div>
+        <div class="legend-item"><div class="dot" style="background:var(--c-male-rel)"></div>男方亲戚</div>
+        <div class="legend-item"><div class="dot" style="background:var(--c-fem-rel)"></div>女方亲戚</div>
+        <div class="legend-item"><div class="dot" style="background:var(--c-comrade)"></div>男方战友</div>
+        <div class="legend-item"><div class="dot" style="background:var(--c-work)"></div>同事/同学</div>
+        <div class="legend-item"><div class="dot" style="background:var(--c-friend)"></div>朋友</div>
+        <div class="legend-item"><div class="dot" style="background:var(--c-staff)"></div>帮工/司机</div>
+    </div>
+
+    <div class="stage-area">舞 台</div>
+
+    <!-- 容器需要ID以便保存DOM顺序 -->
+    <div class="layout-container" id="layoutContainer">
+        
+        <div class="side-block" id="left-block">
+            <div class="column" id="col-1">
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>13</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>14</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>15</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>16</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>17</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>18</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>19</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>20</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>21</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>22</div></div>
+                <div class="table friend"><div class="table-content" contenteditable="true">男方朋友<br>1</div></div>
+                <div class="table friend"><div class="table-content" contenteditable="true">男方朋友<br>2</div></div>
+                <div class="table staff"><div class="table-content" contenteditable="true">男方司机</div></div>
+            </div>
+
+            <div class="column" id="col-2">
+                <div class="table vip"><div class="table-content" contenteditable="true">★主桌★</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>1</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>2</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>3</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>4</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>5</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>6</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>7</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>8</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>9</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>10</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>11</div></div>
+                <div class="table male-rel"><div class="table-content" contenteditable="true">男方亲戚<br>12</div></div>
+            </div>
+        </div>
+
+        <div class="t-stage">
+            <div class="t-text">T台</div>
+        </div>
+
+        <div class="side-block" id="right-block">
+            <div class="column" id="col-3">
+                <div class="table comrade"><div class="table-content" contenteditable="true">男方战友<br>1</div></div>
+                <div class="table comrade"><div class="table-content" contenteditable="true">男方战友<br>2</div></div>
+                <div class="table comrade"><div class="table-content" contenteditable="true">男方战友<br>3</div></div>
+                <div class="table comrade"><div class="table-content" contenteditable="true">男方战友<br>4</div></div>
+                <div class="table comrade"><div class="table-content" contenteditable="true">男方战友<br>5</div></div>
+                <div class="table comrade"><div class="table-content" contenteditable="true">男方战友<br>6</div></div>
+                <div class="table comrade"><div class="table-content" contenteditable="true">男方战友<br>7</div></div>
+                <div class="table comrade"><div class="table-content" contenteditable="true">男方战友<br>8</div></div>
+                <div class="table fem-rel"><div class="table-content" contenteditable="true">女方亲戚<br>1</div></div>
+                <div class="table fem-rel"><div class="table-content" contenteditable="true">女方亲戚<br>2</div></div>
+                <div class="table fem-rel"><div class="table-content" contenteditable="true">女方亲戚<br>3</div></div>
+                <div class="table fem-rel"><div class="table-content" contenteditable="true">女方亲戚<br>4</div></div>
+                <div class="table fem-rel"><div class="table-content" contenteditable="true">女方亲戚<br>5</div></div>
+            </div>
+
+            <div class="column" id="col-4">
+                <div class="table fem-rel"><div class="table-content" contenteditable="true">女方亲戚<br>6</div></div>
+                <div class="table fem-rel"><div class="table-content" contenteditable="true">女方亲戚<br>7</div></div>
+                <div class="table fem-rel"><div class="table-content" contenteditable="true">女方亲戚<br>8</div></div>
+                <div class="table fem-rel"><div class="table-content" contenteditable="true">女方亲戚<br>9</div></div>
+                <div class="table friend"><div class="table-content" contenteditable="true">女方朋友<br>1</div></div>
+                <div class="table friend"><div class="table-content" contenteditable="true">女方朋友<br>2</div></div>
+                <div class="table friend"><div class="table-content" contenteditable="true">男方朋友<br>3</div></div>
+                <div class="table friend"><div class="table-content" contenteditable="true">男方朋友<br>4</div></div>
+                <div class="table work-school"><div class="table-content" contenteditable="true">男方同事<br>1</div></div>
+                <div class="table work-school"><div class="table-content" contenteditable="true">男方同事<br>2</div></div>
+                <div class="table work-school"><div class="table-content" contenteditable="true">男方同学</div></div>
+                <div class="table staff"><div class="table-content" contenteditable="true">男方帮工<br>1</div></div>
+                <div class="table staff"><div class="table-content" contenteditable="true">男方帮工<br>2</div></div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="stats">
+        <h3>当前安排统计 (共52桌)</h3>
+        <span>主桌: 1</span>
+        <span style="border-bottom: 2px solid var(--c-male-rel)">男方亲戚: 22</span>
+        <span style="border-bottom: 2px solid var(--c-fem-rel)">女方亲戚: 9</span>
+        <span style="border-bottom: 2px solid var(--c-comrade)">男方战友: 8</span>
+        <span style="border-bottom: 2px solid var(--c-friend)">朋友(男/女): 6</span>
+        <span style="border-bottom: 2px solid var(--c-work)">同学/同事: 3</span>
+        <span style="border-bottom: 2px solid var(--c-staff)">帮工/司机: 3</span>
+    </div>
+
+    <script>
+        // 全局变量
+        let tables = [];
+        const STORAGE_KEY_PREFIX = 'wedding_table_';
+        const DOM_ORDER_KEY = 'wedding_dom_order'; // 新增：保存DOM顺序的key
+        const saveHint = document.getElementById('saveHint');
+
+        function init() {
+            // 1. 尝试恢复DOM顺序
+            restoreDomOrder();
+
+            // 2. 获取所有桌子并初始化
+            tables = document.querySelectorAll('.table');
+            
+            tables.forEach((table, index) => {
+                // 确保有ID
+                if (!table.id) {
+                    table.id = 't-' + index;
+                }
+
+                // 加载位置坐标和文字内容
+                const savedData = localStorage.getItem(STORAGE_KEY_PREFIX + table.id);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    // 如果有坐标偏移，应用它 (自由拖拽的情况)
+                    // 但如果是交换模式，大部分时候坐标应该是0,0，因为是DOM结构改变
+                    table.style.transform = `translate(${data.x}px, ${data.y}px)`;
+                    
+                    const contentDiv = table.querySelector('.table-content');
+                    if (contentDiv && data.content) {
+                        contentDiv.innerHTML = data.content;
+                    }
+                }
+
+                // 文字编辑监听
+                const contentDiv = table.querySelector('.table-content');
+                if (contentDiv) {
+                    contentDiv.addEventListener('input', () => {
+                        saveTableState(table);
+                    });
+                }
+
+                // 拖拽绑定
+                makeDraggable(table);
+            });
+        }
+
+        // 核心：拖拽与交换逻辑
+        function makeDraggable(el) {
+            let isDragging = false;
+            let startX, startY;
+            let initialTranslateX = 0, initialTranslateY = 0;
+            
+            // 鼠标/触摸按下
+            el.addEventListener('mousedown', dragStart);
+            
+            function dragStart(e) {
+                if (document.activeElement === el.querySelector('.table-content')) return;
+
+                isDragging = true;
+                el.classList.add('dragging');
+                
+                startX = e.clientX;
+                startY = e.clientY;
+
+                const style = window.getComputedStyle(el);
+                const matrix = new WebKitCSSMatrix(style.transform);
+                initialTranslateX = matrix.m41;
+                initialTranslateY = matrix.m42;
+
+                if (e.target.className !== 'table-content') e.preventDefault();
+
+                // 绑定全局移动和松开事件
+                window.addEventListener('mousemove', dragMove);
+                window.addEventListener('mouseup', dragEnd);
+            }
+
+            function dragMove(e) {
+                if (!isDragging) return;
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                el.style.transform = `translate(${initialTranslateX + dx}px, ${initialTranslateY + dy}px)`;
+            }
+
+            function dragEnd(e) {
+                if (!isDragging) return;
+                isDragging = false;
+                el.classList.remove('dragging');
+
+                // 移除全局监听
+                window.removeEventListener('mousemove', dragMove);
+                window.removeEventListener('mouseup', dragEnd);
+
+                // --- 关键修改：检测重叠并交换 ---
+                const swapped = checkCollisionAndSwap(el);
+
+                if (swapped) {
+                    // 如果发生了交换，位置归零（因为DOM位置变了）
+                    // 动画效果通过CSS类触发
+                    showSaveHint();
+                } else {
+                    // 如果没交换，保存当前自由移动的位置
+                    saveTableState(el);
+                }
+                
+                // 无论是否交换，都要保存当前的DOM顺序
+                saveDomOrder();
+            }
+        }
+
+        // 碰撞检测与交换函数
+        function checkCollisionAndSwap(draggedEl) {
+            const r1 = draggedEl.getBoundingClientRect();
+            const centerX = r1.left + r1.width / 2;
+            const centerY = r1.top + r1.height / 2;
+            
+            // 查找所有其他桌子
+            const allTables = document.querySelectorAll('.table');
+            let targetEl = null;
+
+            for (let other of allTables) {
+                if (other === draggedEl) continue;
+
+                const r2 = other.getBoundingClientRect();
+                // 简单的距离检测：如果拖拽中心点落在了另一个桌子的范围内
+                if (centerX >= r2.left && centerX <= r2.right &&
+                    centerY >= r2.top && centerY <= r2.bottom) {
+                    targetEl = other;
+                    break;
+                }
+            }
+
+            if (targetEl) {
+                // 执行交换 DOM
+                swapDomNodes(draggedEl, targetEl);
+                
+                // 重置两者的视觉偏移量 (transform) 为 0
+                // 因为它们已经物理交换了位置，不需要偏移了
+                draggedEl.style.transform = 'translate(0px, 0px)';
+                targetEl.style.transform = 'translate(0px, 0px)';
+
+                // 更新两者的状态到 LocalStorage (清除偏移量)
+                saveTableState(draggedEl, true); // true 表示强制坐标归零
+                saveTableState(targetEl, true);
+
+                // 添加动画效果类
+                draggedEl.classList.add('swapped');
+                targetEl.classList.add('swapped');
+                setTimeout(() => {
+                    draggedEl.classList.remove('swapped');
+                    targetEl.classList.remove('swapped');
+                }, 300);
+
+                return true;
+            }
+            return false;
+        }
+
+        // 交换两个DOM节点
+        function swapDomNodes(node1, node2) {
+            const afterNode2 = node2.nextElementSibling;
+            const parent = node2.parentNode;
+            
+            // 如果 node1 是 node2 的下一个邻居，特殊处理
+            if (node1 === afterNode2) {
+                parent.insertBefore(node1, node2);
+            } else {
+                node1.replaceWith(node2);
+                parent.insertBefore(node1, afterNode2);
+            }
+        }
+
+        // 保存单个桌子状态 (内容 + 坐标)
+        function saveTableState(el, forceZeroCoords = false) {
+            let x = 0, y = 0;
+            
+            if (!forceZeroCoords) {
+                const style = window.getComputedStyle(el);
+                const matrix = new WebKitCSSMatrix(style.transform);
+                x = matrix.m41;
+                y = matrix.m42;
+            }
+
+            const content = el.querySelector('.table-content').innerHTML;
+
+            const data = { x: x, y: y, content: content };
+            localStorage.setItem(STORAGE_KEY_PREFIX + el.id, JSON.stringify(data));
+            showSaveHint();
+        }
+
+        // 保存整个DOM结构的ID顺序
+        function saveDomOrder() {
+            const columns = document.querySelectorAll('.column');
+            const orderMap = {};
+            
+            columns.forEach(col => {
+                const tableIds = Array.from(col.querySelectorAll('.table')).map(t => t.id);
+                orderMap[col.id] = tableIds;
+            });
+            
+            localStorage.setItem(DOM_ORDER_KEY, JSON.stringify(orderMap));
+        }
+
+        // 恢复DOM顺序
+        function restoreDomOrder() {
+            const savedOrder = localStorage.getItem(DOM_ORDER_KEY);
+            if (!savedOrder) return;
+
+            const orderMap = JSON.parse(savedOrder);
+            
+            // 临时将所有table存入map方便查找
+            const allTables = {};
+            document.querySelectorAll('.table').forEach(t => {
+                // 确保ID存在 (初始化前的原始ID，如果HTML未改动)
+                // 注意：这里依赖HTML结构中初始化的ID或者内容匹配，
+                // 简单起见，我们假设用户刷新页面时，HTML里的ID还没生成，
+                // 但内容是固定的。
+                // 更好的方式是：初次加载不操作，依赖 init() 里的 ID 生成，
+                // 然后再重新排序。但 init() 会先运行。
+                // 由于 init() 中第一步就是 restore，此时 ID 可能还没加上。
+                // 所以这里我们需要一种策略：先给 DOM 加 ID，再排序。
+            });
+            
+            // 实际上，init() 函数的结构需要微调：先给所有原始元素打 ID，再排序。
+            const tempTables = document.querySelectorAll('.table');
+            tempTables.forEach((t, i) => { if(!t.id) t.id = 't-'+i; allTables[t.id] = t; });
+
+            for (const colId in orderMap) {
+                const col = document.getElementById(colId);
+                if (!col) continue;
+                
+                const ids = orderMap[colId];
+                ids.forEach(id => {
+                    const tableEl = allTables[id];
+                    if (tableEl) {
+                        col.appendChild(tableEl); // 重新追加到列中，实现排序
+                    }
+                });
+            }
+        }
+
+        // 显示提示
+        let hintTimeout;
+        function showSaveHint() {
+            saveHint.style.display = 'block';
+            clearTimeout(hintTimeout);
+            hintTimeout = setTimeout(() => {
+                saveHint.style.display = 'none';
+            }, 1500);
+        }
+
+        // 重置所有
+        function resetLayout() {
+            if(confirm('确定要重置所有位置和排序吗？(文字内容会保留，但位置会还原)')) {
+                // 1. 清除坐标
+                tables.forEach(table => {
+                    const content = table.querySelector('.table-content').innerHTML;
+                    // 保存 x=0, y=0
+                    localStorage.setItem(STORAGE_KEY_PREFIX + table.id, JSON.stringify({x:0, y:0, content:content}));
+                });
+                // 2. 清除DOM顺序记录
+                localStorage.removeItem(DOM_ORDER_KEY);
+                
+                location.reload();
+            }
+        }
+
+        // 启动
+        init();
+
+    </script>
+</body>
+</html>

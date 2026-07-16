@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作周报 | 2026.1.5 - 2026.1.18</title>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border-color: #e2e8f0;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+        }
+
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* 标题区 */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        .date-range {
+            display: inline-block;
+            padding: 5px 15px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        /* 布局控制 */
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 850px) {
+            .report-grid { grid-template-columns: 1fr; }
+        }
+
+        /* 卡片设计 */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 20px;
+            background: var(--primary-color);
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        /* 内容区块 */
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-header {
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+        }
+
+        .section-header span {
+            background: rgba(37, 99, 235, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-right: 8px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        li {
+            position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
+            color: var(--text-sub);
+            font-size: 0.95rem;
+        }
+
+        li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .highlight {
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>“一本账”智能服务周报</h1>
+        <div class="date-range">周期轨迹：2026.1.5 - 2026.1.18</div>
+    </header>
+
+    <div class="report-grid">
+        
+        <!-- 本周工作内容 -->
+        <div class="card">
+            <div class="card-title">本周工作(01.5-01.11)</div>
+            
+            <div class="section">
+                <div class="section-header"><span>问数</span></div>
+                <ul>
+                    <li>完成开发环境问数导办融合主体流程开发</li>
+                    <li>完成问数部门权限优化</li>
+                    <li>梳理现场问数常见问题220+，完成140左右个问题的测试和调优</li>
+                    <li>完成了问数自动化比对测试优化</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-header"><span>报告</span></div>
+                <ul>
+                    <li>专报模板ntko在线设计和维度自动生成开发，进度50%</li>
+                    <li>完成智能报告小助手需求调研和确认</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-header"><span>导办</span></div>
+                <ul>
+                    <li>完成智能导办自动问答功能开发</li>
+                    <li>完成导办检数准确性提升方案验证</li>
+                    <li>优化导办定位预览pdf时候偶发性报错问题</li>
+                    <li>完成导办自动化比对测试初版</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-header"><span>语料知识库</span></div>
+                <ul>
+                    <li>完成语料知识库场景梳理和工作量初步评估</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-header"><span>其他</span></div>
+                <ul>
+                    <li>完成云网智调，项目管理智能助手确认，不需要做这块内容</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 下周工作规划 -->
+        <div class="card" style="border-top: 4px solid var(--accent-green);">
+            <div class="card-title">下周计划(1.12-1.18)</div>
+            
+            <div class="section">
+                <div class="section-header" style="color:var(--accent-green)"><span>问数</span></div>
+                <ul>
+                    <li>完成问数导办融合更新和优化</li>
+                    <li>完成300+问数问题梳理，完成220左右个问题的调试和调优</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-header" style="color:var(--accent-green)"><span>报告</span></div>
+                <ul>
+                    <li>完成专报模板ntko在线设计和维度自动生成开发</li>
+                    <li>完成智能报告小助手详细设计</li>
+                    <li>专报查看权限优化</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-header" style="color:var(--accent-green)"><span>导办</span></div>
+                <ul>
+                    <li>优化处理导办定位问题</li>
+                    <li>记忆管理推送知识库功能，快捷入口推荐</li>
+                    <li>导办检数准确性提升方案现场验证</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <div class="section-header" style="color:var(--accent-green)"><span>语料知识库</span></div>
+                <ul>
+                    <li>选择一条场景路径开始全流程开发调试验证</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        © 2026 工作汇报系统 · 保持进化
+    </div>
+</div>
+
+</body>
+</html>

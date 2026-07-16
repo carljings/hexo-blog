@@ -1,0 +1,782 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/blog/img/fluid.png">
+  <link rel="icon" href="/blog/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="小川">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="现状：羽毛球越来越流行，喜欢打羽毛球的同学估计都遇到过抢不到场地 &emsp;&emsp; 作为程序员习惯性的想到模拟调用接口就可以自动化抢场地了，于是打开 pc 端张家港文旅微信小程序，用 fiddler 抓一下接口，发现请求体和响应体都进行了加密 ，这样就无法正确构建查询字符串（和场地、时间等多个因素有关），以及返回的响应体也无法解析出晚上 7 到 9 点是否还有空的场地，也无法自动调用预定接">
+<meta property="og:type" content="article">
+<meta property="og:title" content="羽球场 - 自动捡漏（张家港羽球人的福音）">
+<meta property="og:url" content="http://carljings.top/blog/2024/12/20/%E7%BE%BD%E7%90%83%E5%9C%BA-%E8%87%AA%E5%8A%A8%E6%8D%A1%E6%BC%8F/index/index.html">
+<meta property="og:site_name" content="小川的blog">
+<meta property="og:description" content="现状：羽毛球越来越流行，喜欢打羽毛球的同学估计都遇到过抢不到场地 &emsp;&emsp; 作为程序员习惯性的想到模拟调用接口就可以自动化抢场地了，于是打开 pc 端张家港文旅微信小程序，用 fiddler 抓一下接口，发现请求体和响应体都进行了加密 ，这样就无法正确构建查询字符串（和场地、时间等多个因素有关），以及返回的响应体也无法解析出晚上 7 到 9 点是否还有空的场地，也无法自动调用预定接">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://carljings.top/blog/img/zjgwlzb.png">
+<meta property="og:image" content="http://carljings.top/blog/img/username.png">
+<meta property="og:image" content="http://carljings.top/blog/img/username1.png">
+<meta property="og:image" content="http://carljings.top/blog/img/run.gif">
+<meta property="og:image" content="http://carljings.top/blog/img/read.png">
+<meta property="og:image" content="http://carljings.top/blog/img/vendor.png">
+<meta property="og:image" content="http://carljings.top/blog/img/success.png">
+<meta property="article:published_time" content="2024-12-20T03:02:10.000Z">
+<meta property="article:modified_time" content="2026-03-04T13:15:53.506Z">
+<meta property="article:author" content="小川">
+<meta property="article:tag" content="脚本">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://carljings.top/blog/img/zjgwlzb.png">
+  
+  
+  
+  <title>羽球场 - 自动捡漏（张家港羽球人的福音） - 小川的blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/blog/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/blog/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/blog/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/shubiao.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css">
+<link rel="stylesheet" href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/gradient.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"carljings.top","root":"/blog/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":"https://carljings.top/script.js","website_id":"8d8496ca-c014-4ba3-abfe-69238255c0a3","domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":"a92n1nS6JDgqJPdF9F1CGv0SFRDQfjo5RbGXcdwLcwFxLwgLcIeBJCPcHDQJeVG9tdJWueJz4jRgwpprUNQwiVI/+mFckSUbe8K35HY6Ej54CHL1ip63YLRUmv/BpK+Ci3ZVesnextH41ZjPQ91ub8S6z/FO9R8b78iAPblnpXx7lM+75KpAIR5biDkN0YlqNGAvPQt+/uVliTA/yHCQFWssdLpQ+Uby8rOqyaH2ICPa4Fq6uZlOqpW0qKQBCZsfdEL+lblft0YpXalgR3yMPOZPpnICHPO3C0WNKNJGXCf7+XabEDj1ah6mRd1APY/Vrym3+gsP/QeFjvEhLpJwdAGSgAM/GHvBJQ==","api_server":"https://carljings.top/api"}},"search_path":"/blog/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/blog/js/utils.js" ></script>
+  <script  src="/blog/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+    <script async>
+      if (!Fluid.ctx.dnt) {
+        let umami = document.createElement('script');
+        umami.async = true;
+        umami.src = "https://carljings.top/script.js";
+        umami.setAttribute("data-website-id", "8d8496ca-c014-4ba3-abfe-69238255c0a3");
+        umami.setAttribute("data-domains", "");
+        document.head.appendChild(umami);
+      }
+    </script>
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/blog/">
+      <strong>一切成功源自积累~</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>主页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>成就</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/blog/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/blog/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="羽球场 - 自动捡漏（张家港羽球人的福音）"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-12-20 11:02" pubdate>
+          2024年12月20日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          716 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          6 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="umami-page-views-container" class="post-meta" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="umami-page-views"></span> 次
+        </span>
+        
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">羽球场 - 自动捡漏（张家港羽球人的福音）</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p><strong>现状：羽毛球越来越流行，喜欢打羽毛球的同学估计都遇到过抢不到场地</strong></p>
+<p><font face="微软雅黑">&emsp;&emsp; 作为程序员习惯性的想到模拟调用接口就可以自动化抢场地了，于是打开 pc 端张家港文旅微信小程序，用 fiddler 抓一下接口，<strong>发现请求体和响应体都进行了加密 </strong>，这样就无法正确构建查询字符串（和场地、时间等多个因素有关），以及返回的响应体也无法解析出晚上 7 到 9 点是否还有空的场地，也无法自动调用预定接口（接口参数明文传输是不安全的做法，通过加密参数来提升安全和增加接口自动化的难度）</font><br><img src="/blog/img/zjgwlzb.png" srcset="/blog/img/loading.gif" lazyload><br><font color='red'> 怎么办? 如何才能搞清楚加密的方式?</font><br>逆向白盒走读源码是最快的方式</p>
+<ul>
+<li><p>1、快速学习一下微信小程序开发： <a target="_blank" rel="noopener" href="https://developers.weixin.qq.com/miniprogram/dev/framework/quickstart/">微信小程序开发指南</a> ，发现和 web 开发类似，wxml 对应 html、wxss 对应 css、也是用 js 来做逻辑交互</p>
+</li>
+<li><p>2、用工具对本地 PC 小程序进行反编译（ <a target="_blank" rel="noopener" href="https://pan.baidu.com/s/15ODpQVs5hSWveBBmGW1nLg?pwd=j64s">https://pan.baidu.com/s/15ODpQVs5hSWveBBmGW1nLg?pwd=j64s</a> 提取码: j64s ， cmd 执行命令 unveilr.exe  “pc 上小程序路径 \Applet\wx02c264d5a51a608d\178”），在 178 文件夹下会生成一个__APP__文件夹，里面就是反编译后的代码，打开微信开发工具导入即可，导入后程序编译会报很多 customStyle、bodyStyle 等 Bad attr ‘customStyle’ with message: error at token ‘:’.  这样的错误，进行修改调整，全局替换[$orig] 为 .$orig.  ，继续调整 orig 后面多余的.  ，u-swiper.wxml 里的 item.$orig.name 换成 item.$orig.image，</p>
+</li>
+<li><p>3、打开微信 pc 里的职工文旅小程序，用 fiddler 或者 BurpSuite 拦截下 &#x2F;api&#x2F;connect&#x2F;token 请求 ，将 username 的值 copy 出来 <br><img src="/blog/img/username.png" srcset="/blog/img/loading.gif" lazyload><br> 粘贴到 vendor.js 里的 username 值里（24 小时候会失效，重新拦截填充即可）<br><img src="/blog/img/username1.png" srcset="/blog/img/loading.gif" lazyload><br>编译运行，本地开发环境可以正常基本操作了</p>
+<div style="text-align: left;">
+  <img src="/blog/img/run.gif" srcset="/blog/img/loading.gif" lazyload width="100%" style="display: inline-block; margin-right: 25px;">
+</div>
+</li>
+<li><p>4、接下来用微信小程序开发工具里的调试器打断点走读代码，经过 network 里的请求的代码调用栈信息 <br><img src="/blog/img/read.png" srcset="/blog/img/loading.gif" lazyload><br> 找到了 vendor.js 调用请求进行加密的地方，打上断点，用 console.log 将请求里的信息输出，可以看到用了 AES 对称加密算法 <a href="https://carljings.top/blog/2024/12/08/%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E5%AD%A6%E4%B9%A0/index/"> 加密算法学习 </a>，至此加密算法和密钥已有，可以模拟请求了<br><img src="/blog/img/vendor.png" srcset="/blog/img/loading.gif" lazyload><br><font color="red"> 这里面打印出来的参数在下面项目中的 config.json 需要用到</font></p>
+</li>
+<li><p>5、编写代码模拟请求查询和下订单了，整体使用 nodejs 来编写，地址：<a target="_blank" rel="noopener" href="https://github.com/carljings/zg">https://github.com/carljings/zg</a>    ， config.json 里的一些 参数需要填写下，捡漏主程序在 jl.js 里<br><img src="/blog/img/success.png" srcset="/blog/img/loading.gif" lazyload><br>quick.js 抢场地的用到了第三方的验证码对抗服务，不是很稳定，后续会单独出一篇文章来讲讲如何对抗验证码</p>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/blog/categories/%E8%87%AA%E5%8A%A8%E5%8C%96/" class="category-chain-item">自动化</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/blog/tags/%E8%84%9A%E6%9C%AC/" class="print-no-link">#脚本</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>羽球场 - 自动捡漏（张家港羽球人的福音）</div>
+      <div>http://carljings.top/blog/2024/12/20/羽球场-自动捡漏/index/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>小川</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年12月20日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/blog/2026/03/04/%E6%99%BA%E8%83%BD%E9%97%AE%E6%95%B0%E4%BA%A7%E5%93%81%E6%80%9D%E8%80%83/index/" title="智能问数产品思考">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">智能问数产品思考</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/blog/2024/12/14/%E4%BD%B3%E6%98%8E%E5%90%8C%E6%AD%A5%E5%8A%A9%E6%89%8B/index/" title="佳明同步助手 - 微信小程序">
+                        <span class="hidden-mobile">佳明同步助手 - 微信小程序</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+  <div class="disqus" style="width:100%">
+    <div id="disqus_thread"></div>
+    
+      <script>
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          Fluid.utils.createCssLink('https://lib.baomitu.com/disqusjs/1.3.0/disqusjs.css');
+          Fluid.utils.createScript('https://lib.baomitu.com/disqusjs/1.3.0/disqus.js', function() {
+            new DisqusJS({
+              shortname: 'fluid',
+              apikey: '4e8ea498025742b6b9f10f739d96b9ba'
+            });
+          });
+        });
+      </script>
+    
+    <noscript>Please enable JavaScript to view the comments</noscript>
+  </div>
+
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/blog/js/duration.js"></script> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="umami-site-pv-container" style="display: none">
+        总访问量 
+        <span id="umami-site-pv"></span>
+         次
+      </span>
+    
+    
+      <span id="umami-site-uv-container" style="display: none">
+        总访客数 
+        <span id="umami-site-uv"></span>
+         人
+      </span>
+    
+    
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      苏ICP备2024149526号-1A
+    </a>
+  </span>
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/blog/js/events.js" ></script>
+<script  src="/blog/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/blog/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/blog/js/local-search.js" ></script>
+
+  <script defer src="/blog/js/umami-view.js" ></script>
+
+
+
+
+  
+<script src="/blog/js/DynamicLine.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/snowflake.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/star.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/containsWord.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/blog/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<script src="/blog/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/blog/live2dw/assets/koharu.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.5},"log":false});</script></body>
+</html>
