@@ -1,18 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
-  
-  
-  
   <entry>
-    <title>测试发布</title>
-    <link href="/blog/2026/03/04/%E6%B5%8B%E8%AF%95%E5%8F%91%E5%B8%83/index/"/>
-    <url>/blog/2026/03/04/%E6%B5%8B%E8%AF%95%E5%8F%91%E5%B8%83/index/</url>
-    
-    <content type="html"><![CDATA[<h1 id="智能问数产品思考"><a href="# 智能问数产品思考" class="headerlink" title="智能问数产品思考"></a>智能问数产品思考</h1><blockquote><p>关于智能问数（Text-to-SQL）产品的深度分析与未来展望</p></blockquote><hr><h2 id="目录"><a href="# 目录" class="headerlink" title="目录"></a>目录</h2><ol><li><a href="#%E4%B8%80%E8%83%8C%E6%99%AF">背景</a></li><li><a href="#%E4%BA%8C%E7%97%9B%E7%82%B9">痛点</a></li><li><a href="#%E4%B8%89%E5%8F%AF%E8%83%BD%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95">可能的解决方法</a></li><li><a href="#%E5%9B%9B%E4%B8%8B%E4%B8%80%E6%AD%A5%E8%AE%A1%E5%88%92">下一步计划</a></li></ol><hr><h2 id="一、背景"><a href="# 一、背景" class="headerlink" title="一、背景"></a>一、背景 </h2><h3 id="当前方案"><a href="# 当前方案" class="headerlink" title="当前方案"></a> 当前方案</h3><p><strong>RAG + LLM Workflow</strong> 模式：</p><figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">用户提问 → 意图识别 → 知识召回（表信息 <span class="hljs-regexp">/ 术语 /</span> 指标 <span class="hljs-regexp">/ 维度 /</span> 纬度值）→ LLM 生成 SQL → 执行查询 → 结果返回<br></code></pre></td></tr></table></figure><p><strong>典型架构</strong>：</p><ul><li><strong>检索层</strong>：向量数据库 + 关键词检索（混合检索）</li><li><strong>知识层</strong>：表、字段、术语、指标、纬度、纬度值、记忆</li><li><strong>生成层</strong>：大模型生成语义 SQL</li><li><strong>执行层</strong>：SQL 引擎执行和数据返回<br><img src="/blog/img/2026-03-03-%E6%99%BA%E8%83%BD%E9%97%AE%E6%95%B0%E6%9E%B6%E6%9E%84%E5%9B%BE-%E6%89%8B%E7%BB%98%E9%A3%8E-%E6%97%A0%E7%95%99%E7%99%BD_20260304222805.png"></li></ul><p>我们目前还是第二个 RAG 阶段 + 我们的 Agent 平台里的 workflow（对话流、动作流）<br>原先我以为 用动作流的固化流程智能体可以提升问数的稳定性和准确性，但实际这种模式导致了现场架构流程调优、分析师结构化知识梳理、rag 检索优化，提示词优化的人工维护工作量的爆炸，9 张表七八百个问题自测知识积累和调优，花了非常多的人力才搞定平均准确率在 90%，但实际我们问数平台还有很多一本账中屏里的指标问不出来，还有人法信的几百张表都没有接入，对于客户来说我们的平台可问范围远远没达到要求。但我们目前这套架构模式知识实施治理的工作量是相对比较重的，而且对多表关联支持的不好。</p><hr><h2 id="二、痛点"><a href="# 二、痛点" class="headerlink" title="二、痛点"></a>二、痛点</h2><p>1、知识维护成本高：需要人工梳理和维护较多的指标、术语、纬度值近义词，才能保证比较高的准确率<br>2、agent 流程维护成本高：需要专员调试修改对话流、动作流，同时还需要后端配合接口调试（动作流里都是接口技能）<br>3、组件化后对接成本比较高，统一元数据（中研院）、agent（中研院）、前端 太多团队对接协作，调试系统问题的成本很大<br>4、平台架构臃肿、落后，对 ai 不够友好，我们可以用 ai 来做动作流里的接口，但 agent 的对话流和动作流没有接口可以让 ai 自动去开发调整</p><p><img src="/blog/img/%E7%AC%AC%E4%BA%8C%E7%82%B9-%E7%97%9B%E7%82%B9%E6%89%8B%E7%BB%98-%E5%BD%A9%E5%9B%BE%E6%A0%87%E7%89%88_20260304222805.png"></p><hr><h2 id="三、可能的解决方法"><a href="# 三、可能的解决方法" class="headerlink" title="三、可能的解决方法"></a>三、可能的解决方法 </h2><h3 id="方法 -1：知识体系重构 - 自动化学习与治理"><a href="# 方法 -1：知识体系重构 - 自动化学习与治理" class="headerlink" title="方法 1：知识体系重构 + 自动化学习与治理"></a> 方法 1：知识体系重构 + 自动化学习与治理 </h3><p><strong> 对应痛点</strong>：#1 知识维护成本高</p><p><strong>核心思路</strong>：将知识从硬编码中解耦，构建可复用、可持续更新的知识体系</p><p><strong>具体措施</strong>：</p><ul><li><strong>知识图谱</strong>（本体）：建立概念定义和之间的语义关联，梳理本体元知识，解决术语、指标维护爆炸问题。<br><img src="/blog/img/%E7%9F%A5%E8%AF%86%E5%9B%BE%E8%B0%B1%E6%9C%AC%E4%BD%93%E6%96%B9%E6%B3%95%E8%AE%BA-Edited_20260304222805.png"></li><li><strong>标准化主题库</strong>：按住建、交易、政务业务场景建立标准的主题库，这样可以屏蔽每个地方或项目表结构和表数据的差异，保证积累的知识（本体、术语、指标）稳定可复用，但会增加从业务原始表到治理到主题库的数据开发工作量。<br><img src="/blog/img/%E6%A0%87%E5%87%86%E5%8C%96%E4%B8%BB%E9%A2%98%E5%BA%93_20260304222805.png"></li><li><strong>自动化学习与治理</strong>：引入用户反馈机制，模型自动修正错误知识，减少人工维护工作量。模型每天自动总结问题，针对问不出来或者问出来有问题的进行自我总结，最后让人工来审核。比如客户问的问题超出了目前接入表的范围，有些指标超出了目前定义的指标范围，有些行业黑化无法理解需要添加新的术语，让模型被动接收我们分析师梳理的知识变成主动去学习完善自己的知识体系。<br><img src="/blog/img/%E8%87%AA%E5%8A%A8%E5%8C%96%E5%AD%A6%E4%B9%A0%E4%B8%8E%E6%B2%BB%E7%90%86_20260304222805.png"></li><li><strong>简化知识定义</strong>：<br>SQLBot 的知识维护和 RAG 检索也比我们目前的架构简单<br>SQLBot 里只有 术语、表 Schema 描述（包含字段）、SQL 示例、历史相似提问、 这些知识来召回参与 SQL 生成，我们的问数系统里多了 指标、纬度、纬度值 ，指标在 SQLBot 里用术语可以代替， 纬度和纬度值在 SQLBot 里可以维护在字段描述里，可以明显对比出 SQLBot 参与 SQL 生成的检索知识维护比我们的平台要简单，所以他们在部署、快速导入大量表比我们的系统初始化效率要高，并且 SQLbot 通过维护表间关系支持多表查询，用少量的实施工作就能达到 80% 的效果，但也有一些后期扩展问题，SQLBot 在字段描述里添加纬度值的近义词非常麻烦，针对无限动态实体的纬度值需要人工去数据库里查了去字段描述里添加近义词，维护起来没有我们系统方便。只要客户问到 纬度值里近义词相关的问题 SQLBot 都需要非常麻烦的维护工作量，维护的模式没有我们系统方便。<br><img src="/blog/img/%E7%AE%80%E5%8C%96%E7%9F%A5%E8%AF%86%E5%AE%9A%E4%B9%89_20260304222805.png"></li></ul><hr><h3 id="方法 -2：技术栈和架构重塑"><a href="# 方法 -2：技术栈和架构重塑" class="headerlink" title="方法 2：技术栈和架构重塑"></a>方法 2：技术栈和架构重塑 </h3><p><strong> 对应痛点</strong>：#2 agent 流程维护成本高<br>          #3 组件化后对接成本比较高<br>          #4 平台架构臃肿、落后，对 ai 不够友好</p><p><strong>核心思路</strong>：Python 后端 +Vue 前端，放弃公司框架和 Agent 平台</p><p><strong>当前架构问题 </strong><br>⚠️ <strong> 架构过于复杂</strong> - 多组件（问数系统、统一元数据、指标中心、Agent 平台）多团队，协作成本巨大，AI 无法全链路介入，Agent 平台没有给 AI 提供接口，直接限制了系统的快速迭代<br><img src="/blog/img/%E6%9E%B6%E6%9E%84%E8%BF%87%E4%BA%8E%E5%A4%8D%E6%9D%82_20260304222805.png"></p><p>⚠️ <strong>Java 不适合 AI 核心逻辑</strong> - Java 也有 AI 相关的生态，但没有 python 生态那么完善，亲 AI<br><img src="/blog/img/Java%E4%B8%8D%E9%80%82%E5%90%88AI%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91_20260304222805.png"></p><p>⚠️ <strong>Epoint 框架过于重量级</strong> - 启动慢，很多框架的功能根本用不到<br><img src="/blog/img/Epoint%E6%A1%86%E6%9E%B6%E8%BF%87%E4%BA%8E%E9%87%8D%E9%87%8F%E7%BA%A7_20260304222805.png"></p><p>可以参考开源 SQLBot 技术栈来激进调整 <br><strong>Python 3.11 + FastAPI + LangChain&#x2F;LangGraph + PostgreSQL&#x2F;pgvector</strong> 做后端 AI 编排，<strong>Vue 3 + TypeScript + Element Plus + AntV</strong> 做前端交互，<strong>Node.js + G2 SSR</strong> 做服务端图表渲染，整体通过 <strong>Docker</strong> 单容器部署，本地开发使用 <strong>PM2</strong> 统一管理。<br><img src="/blog/img/2026-03-04-sqlbot-tech-stack-v2.png"><br> 摒弃 Epoint 框架后会缺失一些有用的能力，比如统一支撑、统一用户、工作流引擎，需要用 AI 来补齐这块短板，把 SQLBot 里的 pgsql 业务库换成 国产化达梦库和 mysql 库， pgvector 就用 ES 全文 + 向量检索来替代，这个技术栈还有个问题，没有 java 的 write once  run anywhere 跨平台那么强，nodejs 相关依赖打进 docker 都需要在不同国产化环境下进行，要做下面几点补齐适配</p><p><strong>缺失能力补齐方案</strong>：</p><ul><li><strong>统一支撑（权限、审计）</strong>：通过 LangGraph 中间件实现请求链追踪和操作审计，用 AI 自动生成权限模型配置，配合 FastAPI 的中间件实现细粒度权限控制</li><li><strong>统一用户认证</strong>：基于 OAuth2&#x2F;JWT 的轻量级认证方案，结合 PostgreSQL（或达梦）的用户表，借助 FastAPI-JWT 实现</li><li><strong>工作流引擎</strong>：用 LangGraph 的状态机（State Machine）和 Agent 决策流程替代传统工作流，通过 AI 的 tool_choice 实现条件分支和流程编排，更加灵活智能</li></ul><p><strong>国产化数据库适配</strong>：</p><ul><li><strong>达梦库（DM8）</strong>：SQL 方言接近 Oracle，改动主要在连接池（pymongo → dmPython）和 SQL 分页语法，LangChain 的 SQLDatabase 需要自定义 Dialect</li><li><strong>MySQL</strong>：直接兼容，无需额外改动</li><li><strong>ES + 向量数据库</strong>：ES 8.0+ 的 dense_vector 字段可替代 pgvector，全文检索 + 向量检索的组合甚至比 pgvector 更灵活，支持混合搜索</li></ul><p><strong>跨平台国产化部署方案</strong>：</p><ul><li><strong>标准 Docker 镜像</strong>：构建 Python 基础镜像（包含必要系统库），Node.js 依赖通过 <code>npm ci --only=production</code> 在构建时确定版本，避免运行时变化</li><li><strong>分环境构建</strong>：针对飞腾 ARM、龙芯等不同 CPU 架构，预先构建多架构镜像（<code>docker buildx</code>）并推送到私有仓库</li><li><strong>动态链接库处理</strong>：对于国产系统特定的 C 扩展（如数据库驱动），在 Docker 构建阶段通过多阶段构建（Multi-stage Build）编译，确保兼容性</li><li><strong>本地开发</strong>：PM2 配置文件支持条件编译，通过环境变量区分不同 OS，开发机直接用 Host OS，避免频繁构建镜像</li></ul><p><strong>权衡与建议</strong>：</p><ul><li>相比 Java 的跨平台，这套栈的优势是 <strong> 轻量灵活快速迭代 </strong>，劣势是<strong> 国产化环境需要额外测试</strong>。建议早期在标准 Linux 环境验证，后期专项解决国产 CPU + OS 的适配</li></ul><p><img src="/blog/img/%E6%8A%80%E6%9C%AF%E9%80%82%E9%85%8D%E8%A1%A5%E9%BD%90%E6%96%B9%E6%A1%88_20260304222805.png"></p><p>然后在 SQLBot 基础上进行 AI agent 的架构演化，目前我们智能问数和 SQLBot 都没有完全发挥模型的能力，模型既是智能体（Model is the Agent）<br><img src="/blog/img/2026-03-04-sqlbot-query-enhancement-flow.png"><img src="/blog/img/2026-03-04-sqlbot-switch-architecture-v2.png"></p><p>把生成 SQL 的固定流程换成 CC 这种智能体自主调用工具去完成，CC 可以去读取 MD 文件（提前把数据库里的术语、表 Schema 信息等信息 初始化到 md 文件里，或者我们新增采集这些信息的时候就不存库里直接存入 md 文件），然后我们同时也提供一些调用这些知识信息的接口，最后 CC 还能通过 SKills 或者 mcp 的方式连接上数据库自己去查询，我们原先的 LLM 方案是固定流程，LLM 模型只是在最后一步被调用来生成 SQL，并没有完成发挥 LLM 的自主规划、调用工具和 skill 的能力</p><p>相关详细设计：<a href="%E5%8F%8C%E6%96%B9%E6%A1%88%E5%88%87%E6%8D%A2%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1">双方案切换详细设计</a></p><p>还有一种更简单的集成方案，快速把 SQLBot 的前端配置能力复制到我们现在的智能问数系统中，然后把 SQLBot 后端的生成 SQL 的接口当成一个服务 给到我们问数系统里，把 SQLBot 当成一个 SQL 生成的引擎来用</p><p><img src="/blog/img/%E7%AE%80%E5%8D%95%E9%9B%86%E6%88%90%E6%96%B9%E6%A1%88_20260304222805.png"></p><hr><h2 id="四、下一步计划"><a href="# 四、下一步计划" class="headerlink" title="四、下一步计划"></a>四、下一步计划 </h2><p> 基于以上分析，建议分三个阶段推进智能问数产品的演进：</p><h3 id="阶段一：快速集成验证（1 个月）⚡"><a href="# 阶段一：快速集成验证（1 个月）⚡" class="headerlink" title="阶段一：快速集成验证（1 个月）⚡"></a>阶段一：快速集成验证（1 个月）⚡</h3><ul><li><input disabled=""type="checkbox"> 复制 SQLBot 前端配置能力到现有问数系统</li><li><input disabled=""type="checkbox"> 将 SQLBot 后端封装为独立服务</li><li><input disabled=""type="checkbox"> 实现问数系统与 SQLBot 的 API 对接</li><li><input disabled=""type="checkbox"> 在小范围内验证 SQL 生成质量</li></ul><h3 id="阶段二：知识体系重构（1-2 个月）"><a href="# 阶段二：知识体系重构（1-2 个月）" class="headerlink" title="阶段二：知识体系重构（1-2 个月）"></a>阶段二：知识体系重构（1-2 个月）</h3><ul><li><input disabled=""type="checkbox"> 梳理核心业务本体，建立术语、指标、维度的语义关联</li><li><input disabled=""type="checkbox"> 搭建标准化主题库，屏蔽不同项目数据源差异</li><li><input disabled=""type="checkbox"> 引入用户反馈机制，实现知识自动修正与学习</li></ul><h3 id="阶段三：架构演进与 Agent 化（持续）"><a href="# 阶段三：架构演进与 Agent 化（持续）" class="headerlink" title="阶段三：架构演进与 Agent 化（持续）"></a>阶段三：架构演进与 Agent 化（持续）</h3><ul><li><input disabled=""type="checkbox"> 评估集成效果，决定是否全面迁移到 SQLBot 技术栈</li><li><input disabled=""type="checkbox"> 从固定 LLM Workflow 演进到 Agentic AI 模式</li><li><input disabled=""type="checkbox"> 集成 Claude Computer Use&#x2F;Code Interpreter 能力</li><li><input disabled=""type="checkbox"> 实现知识库 MD 文件化 + 数据库查询的双通道模式</li></ul><p><strong>预期收益</strong>：</p><ul><li><strong>快速方案</strong>：最小改动，快速验证 SQLBot 能力</li><li><strong>知识维护</strong>：工作量降低 60%+</li><li><strong>多表查询</strong>：支持能力显著提升</li><li><strong>AI 自主决策</strong>：实现真正的智能 Agent</li></ul><hr><p><em>创建时间：2026-03-03</em><br><em>标签：# 智能问数 #Text-to-SQL #AI #产品思考 #数据分析</em></p>]]></content>
-    
-    
-    
+    <title>折腾 Claude Code 之后，我留下了这套日常配置</title>
+    <link href="/blog/2026/10/28/claude-code-usage/index/"/>
+    <url>/blog/2026/10/28/claude-code-usage/index/</url>
+    <content type="html"><![CDATA[<p>这次配置 Claude Code，我在网络上花的时间最多。网页能打开，终端未必走同一条线路；Mac 配好了，VPS 上的请求又是另一回事。我把现在的配置和使用步骤记下来，方便以后自己查，也给有类似需求的人参考。</p>
+<h2 id="注册邮箱-长期在用的-gmail-优先">注册邮箱：长期在用的 Gmail 优先</h2>
+<p>如果已经有用了多年的 Gmail，而且一直能正常收信，我会直接用它注册 Claude，不必再折腾一个新邮箱。找验证码、翻登录邮件和恢复账号都更方便。没有合适的邮箱，再去 <a href="https://proton.me/">Proton</a> 申请一个免费账号，按页面完成验证。</p>
+<p>接着打开 <a href="https://claude.ai/">claude.ai</a>，用自己的邮箱注册／登录，完成页面要求的验证。<a href="https://support.claude.com/en/articles/8287232-verify-your-phone-number">Claude 当前的官方说明</a>要求新用户验证支持地区手机号，并实际位于支持地区。换邮箱或改用海外线路，不会改变这些条件。</p>
+<p>Claude Code 沿用 Claude 账号，无须单独注册。个人 Pro／Max 套餐包含 Code 访问，免费网页版账号则不等于已经有订阅版 Code 权益；也可以选择另行计费的 Console 认证。具体见<a href="https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan">官方套餐说明</a>。</p>
+<h2 id="我的网络怎么走">我的网络怎么走</h2>
+<p><a href="/blog/img/claude-code-usage-v1-20261028/network-overview.png"><img alt="本地固定出口与 GreenCloud VPS 的关系" src="/blog/img/claude-code-usage-v1-20261028/network-overview.png" /></a></p>
+<p><em>点击图片查看高清。图中隐藏了真实 IP 和凭据；VPS 本机的出口、登录情况需要单独检查。</em></p>
+<p>我现在把 Mac 和手机常用的出口固定在“38”线路，前面接泡泡Dog或 TaiShan 节点。两台设备的用法有些区别：</p>
+<ul>
+<li><strong>Mac 用分流。</strong> Clash 开启 TUN，GFWList、GFW geosite 和之前添加的 255 项域名走固定组，国内与内网按原规则直连。GFWList 用的是核对过的快照，暂时没有自动更新。</li>
+<li><strong>iPhone 用全局。</strong> Clash Mi 里确认 <code>GLOBAL → 出口-38芝加哥 → Static-38…</code>。进入 VPN 的国内流量也会走 38，不用再塞一份 GFWList。</li>
+<li><strong>GreenCloud 单独看。</strong> 我还有一台 GreenCloud VPS，可以提供备用的“64”代理出口，也可以在上面直接运行 Claude Code。当前 Mac 的 38 链路不经过这台 VPS。换出口前，要一起检查 Switcher 的锁定配置。</li>
+</ul>
+<p>这条 38 线路不支持 UDP，相关流量已禁用或拒绝，通话、游戏等功能可能受影响。不同数据库对它的地区判断也不一致，我更看重实际连接记录。手机换 Wi-Fi、切蜂窝网络后，都要重新看一次出口、DNS 和 IPv6。</p>
+<h2 id="switcher-平时怎么用">Switcher 平时怎么用</h2>
+<p>我基于 <a href="https://github.com/YOURSJEYO/claude-switcher">YOURSJEYO/claude-switcher</a> 做了一些调整，代码放在<a href="https://github.com/carljings/claude-switcher/tree/custom/strict-macos">个人定制分支 custom/strict-macos</a>。主要是把每次手动检查网络、切桌面账号这些事集中到一个窗口里。</p>
+<p><a href="/blog/img/claude-code-usage-v1-20261028/switcher-example.png"><img alt="Claude Switcher 白色界面示例" src="/blog/img/claude-code-usage-v1-20261028/switcher-example.png" /></a></p>
+<p><em>示例界面，版本 20261025.2；IP 和邮箱均为演示数据。</em></p>
+<ol>
+<li>打开软件，等检查完成。红色项先处理，黄色项点开看具体原因，灰色项是说明。改过网络后，点“重新扫描”。</li>
+<li>要用桌面账号，先选 A／B，再点“确认打开账号 X”。软件会重新检查，然后切换并打开 Claude。</li>
+<li>要用网页，点“专用浏览器打开 cc web”。这个浏览器有自己的登录状态，不跟着桌面的 A／B 切换。</li>
+<li>要确认 CLI 用的是谁，在运行 Code 的那台机器上执行 <code>claude auth status --text</code>。不要只看 Switcher 里的邮箱标签。</li>
+</ol>
+<p>我的版本还检查 Chicago 时区、en-US 地区格式和英文首选。这是我给本机定的要求，不能据此推断官方会不会封号。窗口显示“本地通过”，说明本地检查通过，不代表官方账号审核结果。</p>
+<h2 id="注册后的一周-我会怎么用">注册后的一周，我会怎么用</h2>
+<p>我会给自己留一周左右，先看看收信、登录和网络有没有问题，再决定长期订阅。这段时间正常做自己的任务就行，不需要每天凑聊天次数。</p>
+<p>第一天把官方验证做完，确认邮箱能收信、浏览器能登录，出口也与配置一致。接下来几天正常使用，碰到断线、限额或额外验证就记录下来；改了配置，再检查一次。还没开通 Code 权益时，可以先用 Claude 网页版熟悉功能。</p>
+<p>一周后再看自己是否需要付费。急着用 Code，也可以按官方条件直接订阅，不用硬等满七天。“观察一周”是我的安排，没有官方证据证明这样就能降低封号概率。</p>
+<p>如果已经出现 on hold 或停用提示，就用原账号走<a href="https://support.claude.com/en/articles/8241253-safeguards-warnings-and-appeals">官方复核／申诉</a>。等待几天、反复换邮箱或自动刷聊天，都不能代替这个流程。</p>
+<h2 id="长时间开发-我更倾向用-greencloud-vps">长时间开发，我更倾向用 GreenCloud VPS</h2>
+<p>项目和开发环境留在 VPS 上，配合 SSH、tmux，本地窗口断开后也容易接着干活。这是我想把长任务放到 GreenCloud 的主要原因。</p>
+<p>先在 VPS 上按<a href="https://code.claude.com/docs/en/quickstart">官方快速开始</a>安装 Claude Code，并准备好 tmux。下面的主机别名和项目目录换成自己的：</p>
+<pre><code class="language-bash">ssh my-vps
+tmux new -As claude-work
+cd ~/my-project
+claude
+</code></pre>
+<p>首次运行时按提示登录。如果 SSH 环境没有自动打开浏览器，可以按 <code>c</code> 复制登录链接，在本地浏览器完成授权。页面和终端提示需要授权码时，再填回终端。另开一个 SSH shell，或者退出 Claude 交互会话后，检查登录身份：</p>
+<pre><code class="language-bash">claude auth status --text
+</code></pre>
+<p>在 VPS 上运行，模型请求就由 VPS 发出。它的路由、IPv4／IPv6 和登录账号要另外检查，Mac 上的 Switcher 管不到远端。后续把这条链路验好，再作为日常开发环境。</p>
+<p>登录细节见<a href="https://code.claude.com/docs/en/authentication">官方认证说明</a>，代理设置见<a href="https://code.claude.com/docs/en/network-config">网络配置文档</a>。</p>
+<h2 id="iphone-上用礼品卡订阅-plus-和-pro">iPhone 上用礼品卡订阅 Plus 和 Pro</h2>
+<p><a href="/blog/img/claude-code-usage-v1-20261028/ios-subscriptions.png"><img alt="Apple 礼品卡充值及两项会员订阅流程" src="/blog/img/claude-code-usage-v1-20261028/ios-subscriptions.png" /></a></p>
+<p>先确认自己符合服务的地区与账号要求。礼品卡要和 Apple 商店地区一致：例如使用合规可用的美区 Apple Account，就选美国区 Apple Gift Card。</p>
+<ol>
+<li>从 <a href="https://www.apple.com/shop/gift-cards">Apple 官方</a>或授权渠道购卡。先看会员结算价、税费和现有余额，再决定买多少；旧式硬件购物卡不能当作 App Store 充值卡。</li>
+<li>打开 <strong>App Store → 头像 → 兑换充值卡或代码</strong>，把金额充进 Apple Account 余额。</li>
+<li>打开对应的官方 App，确认登录的是准备长期使用的账号，再购买会员。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>会员</th>
+<th>官方 App</th>
+<th>购买入口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT Plus</td>
+<td><a href="https://apps.apple.com/us/app/chatgpt/id6448311069">ChatGPT</a>，开发者 OpenAI OpCo, LLC</td>
+<td>App 内选择升级 Plus，核对 Apple 购买确认页。</td>
+</tr>
+<tr>
+<td>Claude Pro</td>
+<td><a href="https://apps.apple.com/us/app/claude-by-anthropic/id6473753684">Claude by Anthropic</a>，开发者 Anthropic PBC</td>
+<td>App 设置中选择升级 Pro，核对 Apple 购买确认页。</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>购买后回到原来的 ChatGPT／Claude 账号，确认会员权益。续费和取消在 <strong>iPhone 设置 → Apple Account → 订阅</strong>中管理。如果网页端已经订阅，先核对，避免买两份。</li>
+</ol>
+<p>金额以手机结算页为准，余额支付有时仍会要求备用付款方式。Apple 账号负责付款，ChatGPT／Claude 账号承接会员，买之前一定看清登录的是谁。Plus 和 Pro 也不包含各自 API 平台的按量费用；使用 Code 时，留意 API Key 是否改变了计费方式。</p>
+<p><a href="https://support.apple.com/en-us/108285">Apple 礼品卡说明</a> · <a href="https://support.apple.com/en-us/118245">余额用途</a> · <a href="https://help.openai.com/en/articles/7905739-chatgpt-ios-app-upgrading-to-a-paid-subscription">ChatGPT iOS 订阅</a> · <a href="https://support.claude.com/en/articles/9266495-how-do-i-sign-up-for-claude-pro-on-the-claude-app-for-ios">Claude iOS 订阅</a></p>
+<h3 id="付款失败-先看卡在哪一步">付款失败，先看卡在哪一步</h3>
+<p>我会先到“设置 → 姓名 → 媒体与购买项目 → 查看账户 → 购买记录”查订单，再看订阅状态，确认订单是没生成、待处理，还是已经完成。这里说的是 Apple 内购；如果 App 跳转到网页付款，就要按网页账单处理。没弄清之前，先别重复购买。</p>
+<table>
+<thead>
+<tr>
+<th>遇到的情况</th>
+<th>先怎么处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>礼品卡兑换失败</td>
+<td>核对卡种、发行地区和账号商店地区。未激活先找售卡商，代码损坏或仍有问题再找 Apple，保留购卡凭证。</td>
+</tr>
+<tr>
+<td>余额有钱，仍提示无法购买</td>
+<td>检查金额是否够付税费、是否有未付订单，以及页面是否要求备用付款方式。出现“上次购买存在账单问题／需要验证”，先到购买记录处理欠款。</td>
+</tr>
+<tr>
+<td>Apple 订单已完成，App 仍是免费版</td>
+<td>核对购买时的服务账号。ChatGPT 可在“设置 → Account → Restore purchases”恢复购买；Claude 先核对原登录邮箱，仍未到账就带订单号联系 Claude 支持。</td>
+</tr>
+<tr>
+<td>重复扣款或想申请退款</td>
+<td>Apple 内购到 <a href="https://reportaproblem.apple.com/">reportaproblem.apple.com</a>提交申请；待处理订单通常要等收据生成。是否批准由 Apple 判断，取消续费和退款要分别处理。</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://support.apple.com/en-us/108285">礼品卡兑换问题</a> · <a href="https://support.apple.com/en-us/118284">欠款处理</a> · <a href="https://help.openai.com/en/articles/20001056-troubleshooting-subscriptions-linked-to-another-chatgpt-account">ChatGPT 恢复购买</a></p>
+<p>如果看到 <strong>Purchase Not Completed</strong>，并且弹窗有 <strong>Continue</strong>，就按提示提交购买复核。<a href="https://support.apple.com/en-us/108095">Apple 官方说明</a>写得很明确：客服不能替你提交，也不能加速审核。遇到银行卡被拒，则还可能需要联系发卡银行。</p>
+<h3 id="在线客服怎么联系">在线客服怎么联系</h3>
+<p><strong>Apple 付款、礼品卡或欠款问题：</strong>打开 <a href="https://support.apple.com/contact">Apple 支持</a>，进入“账单与订阅”或 App Store 相关问题，登录自己的 Apple Account，按页面选择聊天、电话或回电。也可以用 Apple Support App；聊天是否开放，以对应地区和时段的页面为准。</p>
+<p><strong>ChatGPT 会员没到账：</strong>先登录购买时的 ChatGPT 账号，再打开 <a href="https://help.openai.com/">OpenAI 帮助中心</a>，点右下角消息气泡，说明是 iOS 订阅问题。先由虚拟助手接待，需要时再跟进人工支持。附上服务账号邮箱、Apple 订单号、报错和恢复购买的结果，别在另一个账号上再买一次。<a href="https://help.openai.com/en/articles/6614161-how-can-i-contact-support">官方联系客服说明</a></p>
+<p><strong>Claude 会员没到账：</strong>登录 Claude，点头像／姓名 → <strong>Get help → Send us a message → Accept</strong>，选择相关问题；也可从<a href="https://support.claude.com/">帮助中心</a>右下角发消息。先由 Fin 接待，需要调查时再跟进，回复会留在会话里并发到账号邮箱。它是异步支持，免费账号主要使用 Fin 自助，不保证即时人工。<a href="https://support.claude.com/en/articles/9015913-how-to-get-support">官方客服说明</a></p>
+<p>给客服的第一条消息可以这样写，把方括号换成实际情况：</p>
+<blockquote>
+<p>我在 iPhone 为［ChatGPT Plus／Claude Pro］购买订阅，提示［完整报错］。发生时间是［时间和时区］，Apple 商店地区为［地区］，金额为［金额和币种］，订单状态是［未生成／待处理／已完成］。我已做过［检查余额／处理欠款／恢复购买］，请帮我确认下一步。我可以提供购买凭证或订单号。</p>
+</blockquote>
+<p>Apple 内购的退款由 <a href="https://support.apple.com/en-us/118223">Apple 处理</a>，OpenAI 和 Claude 客服主要帮你核对各自的账号与会员问题。礼品卡序列号、购卡凭证等材料，只在自己打开的官方支持渠道按要求提交；不要发送密码、验证码或完整银行卡信息。Cookie、Token 和完整代理配置也别公开。</p>]]></content>
   </entry>
+
+  
+  
+  
+  
   
   
   

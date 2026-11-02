@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html data-default-color-scheme="auto" lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<link href="/blog/img/fluid.png" rel="apple-touch-icon" sizes="76x76"/>
+<link href="/blog/img/fluid.png" rel="icon"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no" name="viewport"/>
+<meta content="ie=edge" http-equiv="x-ua-compatible"/>
+<meta content="#2f4154" name="theme-color"/>
+<meta content="小川" name="author"/>
+<meta content="" name="keywords"/>
+<meta content="这次配置 Claude Code，我在网络上花的时间最多。网页能打开，终端未必走同一条线路；Mac 配好了，VPS 上的请求又是另一回事。我把现在的配置和使用步骤记下来，方便以后自己查，也给有类似需求的人参考。" name="description"/>
+<meta content="article" property="og:type"/>
+<meta content="折腾 Claude Code 之后，我留下了这套日常配置" property="og:title"/>
+<meta content="https://carljings.top/blog/2026/10/28/claude-code-usage/index/" property="og:url"/>
+<meta content="小川的blog" property="og:site_name"/>
+<meta content="这次配置 Claude Code，我在网络上花的时间最多。网页能打开，终端未必走同一条线路；Mac 配好了，VPS 上的请求又是另一回事。我把现在的配置和使用步骤记下来，方便以后自己查，也给有类似需求的人参考。" property="og:description"/>
+<meta content="zh_CN" property="og:locale"/>
+<meta content="2026-10-28T08:04:55Z" property="article:published_time"/>
+<meta content="2026-10-28T08:04:55Z" property="article:modified_time"/>
+<meta content="小川" property="article:author"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="https://carljings.top/blog/img/claude-code-usage-v1-20261028/network-overview.png" name="twitter:image"/>
+<title>折腾 Claude Code 之后，我留下了这套日常配置 - 小川的blog</title>
+<link href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" rel="stylesheet"/>
+<link href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" rel="stylesheet"/>
+<link href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" rel="stylesheet"/>
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+<link href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css" rel="stylesheet"/>
+<link href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css" rel="stylesheet"/>
+<link href="/blog/css/main.css" rel="stylesheet"/>
+<link href="/blog/css/highlight.css" id="highlight-css" rel="stylesheet"/>
+<link href="/blog/css/highlight-dark.css" id="highlight-css-dark" rel="stylesheet"/>
+<link href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/shubiao.css" rel="stylesheet"/>
+<link href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/scroll.css" rel="stylesheet"/>
+<link href="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/gradient.css" rel="stylesheet"/>
+<script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"carljings.top","root":"/blog/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":null},"search_path":"/blog/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+<script src="/blog/js/utils.js"></script>
+<script src="/blog/js/color-schema.js"></script>
+
+<meta content="Hexo 7.3.0" name="generator"/><meta content="https://carljings.top/blog/img/claude-code-usage-v1-20261028/network-overview.png" property="og:image"/><link href="https://carljings.top/blog/2026/10/28/claude-code-usage/index/" rel="canonical"/><style>@media(max-width:767px){#live2d-widget{display:none!important}}</style><link href="/blog/img/claude-code-usage-v1-20261028/switcher-example-LICENSE.txt" rel="license"/></head>
+<body>
+<header>
+<div class="header-inner" style="height: 70vh;">
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark scrolling-navbar" id="navbar">
+<div class="container">
+<a class="navbar-brand" href="/blog/">
+<strong>一切成功源自积累~</strong>
+</a>
+<button aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-target="#navbarSupportedContent" data-toggle="collapse" id="navbar-toggler-btn" type="button">
+<div class="animated-icon"><span></span><span></span><span></span></div>
+</button>
+<!-- Collapsible content -->
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+<ul class="navbar-nav ml-auto text-center">
+<li class="nav-item">
+<a class="nav-link" href="/blog/" target="_self">
+<i class="iconfont icon-home-fill"></i>
+<span>主页</span>
+</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="/blog/categories/" target="_self">
+<i class="iconfont icon-category-fill"></i>
+<span>分类</span>
+</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="/blog/tags/" target="_self">
+<i class="iconfont icon-tags-fill"></i>
+<span>标签</span>
+</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="/blog/archives/" target="_self">
+<i class="iconfont icon-archive-fill"></i>
+<span>成就</span>
+</a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="/blog/about/" target="_self">
+<i class="iconfont icon-user-fill"></i>
+<span>关于</span>
+</a>
+</li>
+<li class="nav-item" id="search-btn">
+<a aria-label="Search" class="nav-link" data-target="#modalSearch" data-toggle="modal" href="javascript:;" target="_self">
+<i class="iconfont icon-search"></i>
+</a>
+</li>
+<li class="nav-item" id="color-toggle-btn">
+<a aria-label="Color Toggle" class="nav-link" href="javascript:;" target="_self">
+<i class="iconfont icon-dark" id="color-toggle-icon"></i>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</nav>
+<div class="banner" id="banner" parallax="true" style="background: url('/blog/img/default.png') no-repeat center center; background-size: cover;">
+<div class="full-bg-img">
+<div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+<div class="banner-text text-center fade-in-up">
+<div class="h2">
+<span data-typed-text="折腾 Claude Code 之后，我留下了这套日常配置" id="subtitle"></span>
+</div>
+<div class="mt-3">
+<span class="post-meta">
+<i aria-hidden="true" class="iconfont icon-date-fill"></i>
+<time datetime="2026-10-28T03:04:55-05:00" pubdate="">2026年10月28日 03:04（America/Chicago）</time>
+</span>
+</div>
+<div class="mt-1">
+<span class="post-meta mr-2"><i class="iconfont icon-chart"></i> 4430 字</span>
+<span class="post-meta mr-2"><i class="iconfont icon-clock-fill"></i> 9 分钟</span>
+
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main>
+<div class="container-fluid nopadding-x">
+<div class="row nomargin-x">
+<div class="side-col d-none d-lg-block col-lg-2">
+</div>
+<div class="col-lg-8 nopadding-x-md">
+<div class="container nopadding-x-md" id="board-ctn">
+<div id="board">
+<article class="post-content mx-auto">
+<h1 id="seo-header">折腾 Claude Code 之后，我留下了这套日常配置</h1>
+<div class="markdown-body"><p>这次配置 Claude Code，我在网络上花的时间最多。网页能打开，终端未必走同一条线路；Mac 配好了，VPS 上的请求又是另一回事。我把现在的配置和使用步骤记下来，方便以后自己查，也给有类似需求的人参考。</p>
+<h2 id="注册邮箱-长期在用的-gmail-优先">注册邮箱：长期在用的 Gmail 优先</h2>
+<p>如果已经有用了多年的 Gmail，而且一直能正常收信，我会直接用它注册 Claude，不必再折腾一个新邮箱。找验证码、翻登录邮件和恢复账号都更方便。没有合适的邮箱，再去 <a href="https://proton.me/" target="_blank" rel="noopener noreferrer">Proton</a> 申请一个免费账号，按页面完成验证。</p>
+<p>接着打开 <a href="https://claude.ai/" target="_blank" rel="noopener noreferrer">claude.ai</a>，用自己的邮箱注册／登录，完成页面要求的验证。<a href="https://support.claude.com/en/articles/8287232-verify-your-phone-number" target="_blank" rel="noopener noreferrer">Claude 当前的官方说明</a>要求新用户验证支持地区手机号，并实际位于支持地区。换邮箱或改用海外线路，不会改变这些条件。</p>
+<p>Claude Code 沿用 Claude 账号，无须单独注册。个人 Pro／Max 套餐包含 Code 访问，免费网页版账号则不等于已经有订阅版 Code 权益；也可以选择另行计费的 Console 认证。具体见<a href="https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan" target="_blank" rel="noopener noreferrer">官方套餐说明</a>。</p>
+<h2 id="我的网络怎么走">我的网络怎么走</h2>
+<p><a href="/blog/img/claude-code-usage-v1-20261028/network-overview.png" target="_blank" rel="noopener noreferrer"><img alt="本地固定出口与 GreenCloud VPS 的关系" src="/blog/img/claude-code-usage-v1-20261028/network-overview.png"/></a></p>
+<p><em>点击图片查看高清。图中隐藏了真实 IP 和凭据；VPS 本机的出口、登录情况需要单独检查。</em></p>
+<p>我现在把 Mac 和手机常用的出口固定在“38”线路，前面接泡泡Dog或 TaiShan 节点。两台设备的用法有些区别：</p>
+<ul>
+<li><strong>Mac 用分流。</strong> Clash 开启 TUN，GFWList、GFW geosite 和之前添加的 255 项域名走固定组，国内与内网按原规则直连。GFWList 用的是核对过的快照，暂时没有自动更新。</li>
+<li><strong>iPhone 用全局。</strong> Clash Mi 里确认 <code>GLOBAL → 出口-38芝加哥 → Static-38…</code>。进入 VPN 的国内流量也会走 38，不用再塞一份 GFWList。</li>
+<li><strong>GreenCloud 单独看。</strong> 我还有一台 GreenCloud VPS，可以提供备用的“64”代理出口，也可以在上面直接运行 Claude Code。当前 Mac 的 38 链路不经过这台 VPS。换出口前，要一起检查 Switcher 的锁定配置。</li>
+</ul>
+<p>这条 38 线路不支持 UDP，相关流量已禁用或拒绝，通话、游戏等功能可能受影响。不同数据库对它的地区判断也不一致，我更看重实际连接记录。手机换 Wi-Fi、切蜂窝网络后，都要重新看一次出口、DNS 和 IPv6。</p>
+<h2 id="switcher-平时怎么用">Switcher 平时怎么用</h2>
+<p>我基于 <a href="https://github.com/YOURSJEYO/claude-switcher" target="_blank" rel="noopener noreferrer">YOURSJEYO/claude-switcher</a> 做了一些调整，代码放在<a href="https://github.com/carljings/claude-switcher/tree/custom/strict-macos" target="_blank" rel="noopener noreferrer">个人定制分支 custom/strict-macos</a>。主要是把每次手动检查网络、切桌面账号这些事集中到一个窗口里。</p>
+<p><a href="/blog/img/claude-code-usage-v1-20261028/switcher-example.png" target="_blank" rel="noopener noreferrer"><img alt="Claude Switcher 白色界面示例" src="/blog/img/claude-code-usage-v1-20261028/switcher-example.png"/></a></p>
+<p><em>示例界面，版本 20261025.2；IP 和邮箱均为演示数据。</em></p>
+<ol>
+<li>打开软件，等检查完成。红色项先处理，黄色项点开看具体原因，灰色项是说明。改过网络后，点“重新扫描”。</li>
+<li>要用桌面账号，先选 A／B，再点“确认打开账号 X”。软件会重新检查，然后切换并打开 Claude。</li>
+<li>要用网页，点“专用浏览器打开 cc web”。这个浏览器有自己的登录状态，不跟着桌面的 A／B 切换。</li>
+<li>要确认 CLI 用的是谁，在运行 Code 的那台机器上执行 <code>claude auth status --text</code>。不要只看 Switcher 里的邮箱标签。</li>
+</ol>
+<p>我的版本还检查 Chicago 时区、en-US 地区格式和英文首选。这是我给本机定的要求，不能据此推断官方会不会封号。窗口显示“本地通过”，说明本地检查通过，不代表官方账号审核结果。</p>
+<h2 id="注册后的一周-我会怎么用">注册后的一周，我会怎么用</h2>
+<p>我会给自己留一周左右，先看看收信、登录和网络有没有问题，再决定长期订阅。这段时间正常做自己的任务就行，不需要每天凑聊天次数。</p>
+<p>第一天把官方验证做完，确认邮箱能收信、浏览器能登录，出口也与配置一致。接下来几天正常使用，碰到断线、限额或额外验证就记录下来；改了配置，再检查一次。还没开通 Code 权益时，可以先用 Claude 网页版熟悉功能。</p>
+<p>一周后再看自己是否需要付费。急着用 Code，也可以按官方条件直接订阅，不用硬等满七天。“观察一周”是我的安排，没有官方证据证明这样就能降低封号概率。</p>
+<p>如果已经出现 on hold 或停用提示，就用原账号走<a href="https://support.claude.com/en/articles/8241253-safeguards-warnings-and-appeals" target="_blank" rel="noopener noreferrer">官方复核／申诉</a>。等待几天、反复换邮箱或自动刷聊天，都不能代替这个流程。</p>
+<h2 id="长时间开发-我更倾向用-greencloud-vps">长时间开发，我更倾向用 GreenCloud VPS</h2>
+<p>项目和开发环境留在 VPS 上，配合 SSH、tmux，本地窗口断开后也容易接着干活。这是我想把长任务放到 GreenCloud 的主要原因。</p>
+<p>先在 VPS 上按<a href="https://code.claude.com/docs/en/quickstart" target="_blank" rel="noopener noreferrer">官方快速开始</a>安装 Claude Code，并准备好 tmux。下面的主机别名和项目目录换成自己的：</p>
+<pre><code class="language-bash">ssh my-vps
+tmux new -As claude-work
+cd ~/my-project
+claude
+</code></pre>
+<p>首次运行时按提示登录。如果 SSH 环境没有自动打开浏览器，可以按 <code>c</code> 复制登录链接，在本地浏览器完成授权。页面和终端提示需要授权码时，再填回终端。另开一个 SSH shell，或者退出 Claude 交互会话后，检查登录身份：</p>
+<pre><code class="language-bash">claude auth status --text
+</code></pre>
+<p>在 VPS 上运行，模型请求就由 VPS 发出。它的路由、IPv4／IPv6 和登录账号要另外检查，Mac 上的 Switcher 管不到远端。后续把这条链路验好，再作为日常开发环境。</p>
+<p>登录细节见<a href="https://code.claude.com/docs/en/authentication" target="_blank" rel="noopener noreferrer">官方认证说明</a>，代理设置见<a href="https://code.claude.com/docs/en/network-config" target="_blank" rel="noopener noreferrer">网络配置文档</a>。</p>
+<h2 id="iphone-上用礼品卡订阅-plus-和-pro">iPhone 上用礼品卡订阅 Plus 和 Pro</h2>
+<p><a href="/blog/img/claude-code-usage-v1-20261028/ios-subscriptions.png" target="_blank" rel="noopener noreferrer"><img alt="Apple 礼品卡充值及两项会员订阅流程" src="/blog/img/claude-code-usage-v1-20261028/ios-subscriptions.png"/></a></p>
+<p>先确认自己符合服务的地区与账号要求。礼品卡要和 Apple 商店地区一致：例如使用合规可用的美区 Apple Account，就选美国区 Apple Gift Card。</p>
+<ol>
+<li>从 <a href="https://www.apple.com/shop/gift-cards" target="_blank" rel="noopener noreferrer">Apple 官方</a>或授权渠道购卡。先看会员结算价、税费和现有余额，再决定买多少；旧式硬件购物卡不能当作 App Store 充值卡。</li>
+<li>打开 <strong>App Store → 头像 → 兑换充值卡或代码</strong>，把金额充进 Apple Account 余额。</li>
+<li>打开对应的官方 App，确认登录的是准备长期使用的账号，再购买会员。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>会员</th>
+<th>官方 App</th>
+<th>购买入口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ChatGPT Plus</td>
+<td><a href="https://apps.apple.com/us/app/chatgpt/id6448311069" target="_blank" rel="noopener noreferrer">ChatGPT</a>，开发者 OpenAI OpCo, LLC</td>
+<td>App 内选择升级 Plus，核对 Apple 购买确认页。</td>
+</tr>
+<tr>
+<td>Claude Pro</td>
+<td><a href="https://apps.apple.com/us/app/claude-by-anthropic/id6473753684" target="_blank" rel="noopener noreferrer">Claude by Anthropic</a>，开发者 Anthropic PBC</td>
+<td>App 设置中选择升级 Pro，核对 Apple 购买确认页。</td>
+</tr>
+</tbody>
+</table>
+<ol start="4">
+<li>购买后回到原来的 ChatGPT／Claude 账号，确认会员权益。续费和取消在 <strong>iPhone 设置 → Apple Account → 订阅</strong>中管理。如果网页端已经订阅，先核对，避免买两份。</li>
+</ol>
+<p>金额以手机结算页为准，余额支付有时仍会要求备用付款方式。Apple 账号负责付款，ChatGPT／Claude 账号承接会员，买之前一定看清登录的是谁。Plus 和 Pro 也不包含各自 API 平台的按量费用；使用 Code 时，留意 API Key 是否改变了计费方式。</p>
+<p><a href="https://support.apple.com/en-us/108285" target="_blank" rel="noopener noreferrer">Apple 礼品卡说明</a> · <a href="https://support.apple.com/en-us/118245" target="_blank" rel="noopener noreferrer">余额用途</a> · <a href="https://help.openai.com/en/articles/7905739-chatgpt-ios-app-upgrading-to-a-paid-subscription" target="_blank" rel="noopener noreferrer">ChatGPT iOS 订阅</a> · <a href="https://support.claude.com/en/articles/9266495-how-do-i-sign-up-for-claude-pro-on-the-claude-app-for-ios" target="_blank" rel="noopener noreferrer">Claude iOS 订阅</a></p>
+<h3 id="付款失败-先看卡在哪一步">付款失败，先看卡在哪一步</h3>
+<p>我会先到“设置 → 姓名 → 媒体与购买项目 → 查看账户 → 购买记录”查订单，再看订阅状态，确认订单是没生成、待处理，还是已经完成。这里说的是 Apple 内购；如果 App 跳转到网页付款，就要按网页账单处理。没弄清之前，先别重复购买。</p>
+<table>
+<thead>
+<tr>
+<th>遇到的情况</th>
+<th>先怎么处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>礼品卡兑换失败</td>
+<td>核对卡种、发行地区和账号商店地区。未激活先找售卡商，代码损坏或仍有问题再找 Apple，保留购卡凭证。</td>
+</tr>
+<tr>
+<td>余额有钱，仍提示无法购买</td>
+<td>检查金额是否够付税费、是否有未付订单，以及页面是否要求备用付款方式。出现“上次购买存在账单问题／需要验证”，先到购买记录处理欠款。</td>
+</tr>
+<tr>
+<td>Apple 订单已完成，App 仍是免费版</td>
+<td>核对购买时的服务账号。ChatGPT 可在“设置 → Account → Restore purchases”恢复购买；Claude 先核对原登录邮箱，仍未到账就带订单号联系 Claude 支持。</td>
+</tr>
+<tr>
+<td>重复扣款或想申请退款</td>
+<td>Apple 内购到 <a href="https://reportaproblem.apple.com/" target="_blank" rel="noopener noreferrer">reportaproblem.apple.com</a>提交申请；待处理订单通常要等收据生成。是否批准由 Apple 判断，取消续费和退款要分别处理。</td>
+</tr>
+</tbody>
+</table>
+<p><a href="https://support.apple.com/en-us/108285" target="_blank" rel="noopener noreferrer">礼品卡兑换问题</a> · <a href="https://support.apple.com/en-us/118284" target="_blank" rel="noopener noreferrer">欠款处理</a> · <a href="https://help.openai.com/en/articles/20001056-troubleshooting-subscriptions-linked-to-another-chatgpt-account" target="_blank" rel="noopener noreferrer">ChatGPT 恢复购买</a></p>
+<p>如果看到 <strong>Purchase Not Completed</strong>，并且弹窗有 <strong>Continue</strong>，就按提示提交购买复核。<a href="https://support.apple.com/en-us/108095" target="_blank" rel="noopener noreferrer">Apple 官方说明</a>写得很明确：客服不能替你提交，也不能加速审核。遇到银行卡被拒，则还可能需要联系发卡银行。</p>
+<h3 id="在线客服怎么联系">在线客服怎么联系</h3>
+<p><strong>Apple 付款、礼品卡或欠款问题：</strong>打开 <a href="https://support.apple.com/contact" target="_blank" rel="noopener noreferrer">Apple 支持</a>，进入“账单与订阅”或 App Store 相关问题，登录自己的 Apple Account，按页面选择聊天、电话或回电。也可以用 Apple Support App；聊天是否开放，以对应地区和时段的页面为准。</p>
+<p><strong>ChatGPT 会员没到账：</strong>先登录购买时的 ChatGPT 账号，再打开 <a href="https://help.openai.com/" target="_blank" rel="noopener noreferrer">OpenAI 帮助中心</a>，点右下角消息气泡，说明是 iOS 订阅问题。先由虚拟助手接待，需要时再跟进人工支持。附上服务账号邮箱、Apple 订单号、报错和恢复购买的结果，别在另一个账号上再买一次。<a href="https://help.openai.com/en/articles/6614161-how-can-i-contact-support" target="_blank" rel="noopener noreferrer">官方联系客服说明</a></p>
+<p><strong>Claude 会员没到账：</strong>登录 Claude，点头像／姓名 → <strong>Get help → Send us a message → Accept</strong>，选择相关问题；也可从<a href="https://support.claude.com/" target="_blank" rel="noopener noreferrer">帮助中心</a>右下角发消息。先由 Fin 接待，需要调查时再跟进，回复会留在会话里并发到账号邮箱。它是异步支持，免费账号主要使用 Fin 自助，不保证即时人工。<a href="https://support.claude.com/en/articles/9015913-how-to-get-support" target="_blank" rel="noopener noreferrer">官方客服说明</a></p>
+<p>给客服的第一条消息可以这样写，把方括号换成实际情况：</p>
+<blockquote>
+<p>我在 iPhone 为［ChatGPT Plus／Claude Pro］购买订阅，提示［完整报错］。发生时间是［时间和时区］，Apple 商店地区为［地区］，金额为［金额和币种］，订单状态是［未生成／待处理／已完成］。我已做过［检查余额／处理欠款／恢复购买］，请帮我确认下一步。我可以提供购买凭证或订单号。</p>
+</blockquote>
+<p>Apple 内购的退款由 <a href="https://support.apple.com/en-us/118223" target="_blank" rel="noopener noreferrer">Apple 处理</a>，OpenAI 和 Claude 客服主要帮你核对各自的账号与会员问题。礼品卡序列号、购卡凭证等材料，只在自己打开的官方支持渠道按要求提交；不要发送密码、验证码或完整银行卡信息。Cookie、Token 和完整代理配置也别公开。</p></div>
+<hr/>
+<div>
+<div class="post-metas my-3">
+</div>
+<div class="license-box my-3">
+<div class="license-title">
+<div>折腾 Claude Code 之后，我留下了这套日常配置</div>
+<div>https://carljings.top/blog/2026/10/28/claude-code-usage/index/</div>
+</div>
+<div class="license-meta">
+<div class="license-meta-item">
+<div>作者</div>
+<div>小川</div>
+</div>
+<div class="license-meta-item license-meta-date">
+<div>发布于</div>
+<div>2026年10月28日 03:04 America/Chicago</div>
+</div>
+<div class="license-meta-item">
+<div>许可协议</div>
+<div>
+<a class="print-no-link" href="https://creativecommons.org/licenses/by/4.0/" target="_blank">
+<span aria-label="BY - 署名" class="hint--top hint--rounded">
+<i class="iconfont icon-cc-by"></i>
+</span>
+</a>
+</div>
+</div>
+</div>
+<div class="license-icon iconfont"></div>
+</div><p class="small text-muted">Switcher 示例界面相关代码基于 MIT 许可，<a href="/blog/img/claude-code-usage-v1-20261028/switcher-example-LICENSE.txt">查看版权与许可文本</a>。</p>
+<div class="post-prevnext my-3"><article class="post-prev col-6"></article><article class="post-next col-6"><a href="/blog/2026/03/04/SQLot%20%E5%8F%8C%E6%96%B9%E6%A1%88%E5%88%87%E6%8D%A2%E8%AF%A6%E7%BB%86%E8%AE%BE%E8%AE%A1%E6%96%87%E6%A1%A3/index/" title="SQLot 双方案切换详细设计文档"><span class="hidden-mobile">SQLot 双方案切换详细设计文档</span><span class="visible-mobile">下一篇</span><i class="iconfont icon-arrowright"></i></a></article></div>
+</div>
+<article id="comments" lazyload="">
+<div class="disqus" style="width:100%">
+<div id="disqus_thread"></div>
+<script>
+        Fluid.utils.loadComments('#disqus_thread', function() {
+          Fluid.utils.createCssLink('https://lib.baomitu.com/disqusjs/1.3.0/disqusjs.css');
+          Fluid.utils.createScript('https://lib.baomitu.com/disqusjs/1.3.0/disqus.js', function() {
+            new DisqusJS({
+              shortname: 'fluid',
+              apikey: '4e8ea498025742b6b9f10f739d96b9ba'
+            });
+          });
+        });
+      </script>
+<noscript>Please enable JavaScript to view the comments</noscript>
+</div>
+</article>
+</article>
+</div>
+</div>
+</div>
+<div class="side-col d-none d-lg-block col-lg-2">
+<aside class="sidebar" style="margin-left: -1rem">
+<div id="toc">
+<p class="toc-header">
+<i class="iconfont icon-list"></i>
+<span>目录</span>
+</p>
+<div class="toc-body" id="toc-body"></div>
+</div>
+</aside>
+</div>
+</div>
+</div>
+<a aria-label="TOP" href="#" id="scroll-top-button" role="button">
+<i aria-hidden="true" class="iconfont icon-arrowup"></i>
+</a>
+<div aria-hidden="true" aria-labelledby="ModalLabel" class="modal fade" id="modalSearch" role="dialog" tabindex="-1">
+<div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+<div class="modal-content">
+<div class="modal-header text-center">
+<h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+<button aria-label="Close" class="close" data-dismiss="modal" id="local-search-close" type="button">
+<span aria-hidden="true">×</span>
+</button>
+</div>
+<div class="modal-body mx-3">
+<div class="md-form mb-5">
+<input class="form-control validate" id="local-search-input" type="text"/>
+<label data-error="x" data-success="v" for="local-search-input">关键词</label>
+</div>
+<div class="list-group" id="local-search-result"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<footer>
+<div class="footer-inner">
+<div class="footer-content">
+<span id="timeDate">载入天数...</span> <span id="times">载入时分秒...</span> <script src="/blog/js/duration.js"></script>
+</div>
+<div class="statistics">
+
+
+</div>
+<!-- 备案信息 ICP for China -->
+<div class="beian">
+<span>
+<a href="http://beian.miit.gov.cn/" rel="nofollow noopener" target="_blank">
+      苏ICP备2024149526号-1A
+    </a>
+</span>
+</div>
+</div>
+</footer>
+<!-- Scripts -->
+<script src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js"></script>
+<link href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" rel="stylesheet"/>
+<script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+<script src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js"></script>
+<script src="/blog/js/events.js"></script>
+<script src="/blog/js/plugins.js"></script>
+<script src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js"></script>
+<script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+<script src="/blog/js/img-lazyload.js"></script>
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+<script src="https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js"></script>
+<script>Fluid.plugins.codeWidget();</script>
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+<script>Fluid.plugins.imageCaption();</script>
+<script src="/blog/js/local-search.js"></script>
+
+<script src="/blog/js/DynamicLine.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/DynamicRibbon.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/snowflake.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/star.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/containsWord.min.js"></script>
+<script src="//cdn.jsdelivr.net/gh/EmoryHuang/BlogBeautify@1.1/love.min.js"></script>
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script src="/blog/js/boot.js"></script>
+<noscript>
+<div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+</noscript>
+<script src="/blog/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"debug":false,"model":{"jsonPath":"/blog/live2dw/assets/koharu.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":true},"react":{"opacity":0.5},"log":false});</script></body>
+</html>
